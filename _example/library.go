@@ -10,14 +10,36 @@ import (
 )
 
 func main() {
+	host := []string{
+		"59.82.12.138",
+		"59.82.37.30",
+		"59.82.14.215",
+		"59.82.15.82",
+		"59.82.44.41",
+		"59.82.9.177",
+		"118.187.65.194",
+		"59.82.44.168",
+		"47.92.99.162",
+		"59.82.9.180",
+		"59.82.8.66",
+		"59.82.14.249",
+		"59.82.9.179",
+		"203.93.127.226",
+		"59.82.8.65",
+		"113.113.82.105",
+		"59.82.9.178",
+		"59.82.13.252",
+		"59.82.44.105",
+		"59.82.34.190",
+	}
 	options := &runner.Options{
-		Proxy:    "socks5://192.168.8.109:8888",
-		Host:     goflags.StringSlice{"192.168.1.114"},
+		//Proxy:    "socks5://192.168.8.109:8888",
+		Host:     goflags.StringSlice(host),
 		ScanType: runner.ConnectScan,
 		TopPorts: "full", //100  1000 full
 		//Ports:             "22,8080,8084",
-		Interface:         "en0",
-		OnlyHostDiscovery: true,
+		Interface: "en0",
+		//OnlyHostDiscovery: true,
 		//ExcludeCDN:   true,
 		ExcludeIps:   "",
 		ExcludePorts: "",

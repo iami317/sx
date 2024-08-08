@@ -7,8 +7,8 @@ const (
 	DefaultRateSynScan     = 1000
 	DefaultRateConnectScan = 1500
 
-	DefaultRetriesSynScan     = 3
-	DefaultRetriesConnectScan = 3
+	DefaultRetriesSynScan     = 1
+	DefaultRetriesConnectScan = 1
 
 	SynScan     = "s"
 	ConnectScan = "c"

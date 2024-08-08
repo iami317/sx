@@ -49,9 +49,6 @@ func main() {
 			}
 
 		},
-		OnProgress: func(c, e uint64) {
-			//fmt.Printf("需要探测目标总数：%v,发包数量：%v\n", c, e)
-		},
 	}
 	nbxRunner, err := runner.NewRunner(options)
 	if err != nil {

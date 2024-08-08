@@ -272,10 +272,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		if len(ips) == 0 {
 			return fmt.Errorf("no valid ipv4 or ipv6 targets were found")
 		}
-		for k, ip := range ips {
-			if r.options.OnProgress != nil {
-				r.options.OnProgress(uint64(len(ips)), uint64(k+1))
-			}
+		for _, ip := range ips {
 			r.handleHostDiscovery(ip)
 		}
 
@@ -421,9 +418,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			currentSeed := time.Now().UnixNano()
 			b := blackrock.New(int64(Range), currentSeed)
 			for index := int64(0); index < int64(Range); index++ {
-				if r.options.OnProgress != nil {
-					r.options.OnProgress(Range*uint64(r.options.Retries), uint64(index+1))
-				}
 				xxx := b.Shuffle(index)
 				ipIndex := xxx / int64(portsCount)
 				portIndex := int(xxx % int64(portsCount))
@@ -451,10 +445,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			}
 
 			// handle the ip:port combination
-			for k, targetWithPort := range targetsWithPort {
-				if r.options.OnProgress != nil {
-					r.options.OnProgress(Range, uint64(k+1))
-				}
+			for _, targetWithPort := range targetsWithPort {
 				ip, p, err := net.SplitHostPort(targetWithPort)
 				if err != nil {
 					logx.Debugf("Skipping %s: %v", targetWithPort, err)

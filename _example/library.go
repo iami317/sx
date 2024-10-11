@@ -12,11 +12,11 @@ import (
 func main() {
 	options := &runner.Options{
 		//Proxy:    "socks5://192.168.8.109:8888",
-		Host:     goflags.StringSlice([]string{"36.138.2.170"}),
+		Host:     goflags.StringSlice([]string{"json.cn"}),
 		ScanType: runner.SynScan,
-		TopPorts: "full", //100  1000 full
+		TopPorts: "100", //100  1000 full
 		//Ports:     "22,50000,9093,9092,6379,81,8081,8080,8000,50051,50052,50053,50054,50055",
-		Interface: "en0",
+		//Interface: "en0",
 		//OnlyHostDiscovery: true,
 		//ExcludeCDN:   true,
 		ExcludeIps:   "",
@@ -28,7 +28,7 @@ func main() {
 		ArpPing:    false,
 		Rate:       runner.DefaultRateSynScan,
 		Threads:    100,
-		IPVersion:  []string{scan.IPv4},
+		IPVersion:  []string{scan.IPv4, scan.IPv6},
 		Retries:    runner.DefaultRetriesSynScan,
 		Timeout:    runner.DefaultPortTimeoutSynScan,
 		WarmUpTime: 20,
@@ -37,17 +37,19 @@ func main() {
 
 		OnResult: func(hostResult *result.HostResult) {
 			if len(hostResult.Ports) > 0 {
-				fmt.Printf("***ip:%v *** Port:%v %v\n", hostResult.IP, hostResult.Ports[0].Port, len(hostResult.Ports))
+				for _, port := range hostResult.Ports {
+					fmt.Printf("***ip:%v ***host:%v ***Port:%v\n", hostResult.IP, hostResult.Host, port)
+				}
+
 			}
-			fmt.Printf("***ip:%v **** host:%v **** IsCdn:%v **** CdnName:%v\n", hostResult.IP, hostResult.Host, hostResult.IsCDNIP, hostResult.CdnName)
 		},
 		OnReceive: func(hostResult *result.HostResult) {
 			if len(hostResult.Ports) > 0 {
-				fmt.Printf("---ip:%v ****Port:%v %v\n", hostResult.IP, hostResult.Ports[0].Port, len(hostResult.Ports))
-			} else {
-				fmt.Printf("---ip:%v **** host:%v **** IsCdn:%v **** CdnName:%v\n", hostResult.IP, hostResult.Host, hostResult.IsCDNIP, hostResult.CdnName)
-			}
+				for _, port := range hostResult.Ports {
+					fmt.Printf("---ip:%v ---host:%v ---Port:%v %v\n", hostResult.IP, hostResult.Host, port)
+				}
 
+			}
 		},
 	}
 	nbxRunner, err := runner.NewRunner(options)

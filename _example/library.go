@@ -16,7 +16,7 @@ func main() {
 		ScanType: runner.SynScan,
 		TopPorts: "100", //100  1000 full
 		//Ports:     "22,50000,9093,9092,6379,81,8081,8080,8000,50051,50052,50053,50054,50055",
-		//Interface: "en0",
+		Interface: "en0",
 		//OnlyHostDiscovery: true,
 		//ExcludeCDN:   true,
 		ExcludeIps:   "",
@@ -28,7 +28,7 @@ func main() {
 		ArpPing:    false,
 		Rate:       runner.DefaultRateSynScan,
 		Threads:    100,
-		IPVersion:  []string{scan.IPv4, scan.IPv6},
+		IPVersion:  []string{scan.IPv4},
 		Retries:    runner.DefaultRetriesSynScan,
 		Timeout:    runner.DefaultPortTimeoutSynScan,
 		WarmUpTime: 20,

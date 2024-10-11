@@ -76,7 +76,7 @@ func ParsePorts(options *Options) ([]*port.Port, error) {
 				return nil, fmt.Errorf("could not read ports: %s", err)
 			}
 		case "Simplify":
-			ports, err := parsePortsList(Rce)
+			ports, err := parsePortsList(Simplify)
 			if err != nil {
 				return nil, fmt.Errorf("could not read ports: %s", err)
 			}

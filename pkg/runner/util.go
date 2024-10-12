@@ -19,8 +19,20 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 	// addresses for a given host. Else use that host for port scanning
 	if !iputil.IsIP(target) {
 		//dnsData, err := r.dnsClient.QueryMultiple(target)
-		dnsClient, err := retryabledns.New([]string{"8.8.8.8:53", "8.8.4.4:53", "tcp:1.1.1.1"}, 2)
+		//dnsClient, err := retryabledns.New([]string{"8.8.8.8:53", "8.8.4.4:53", "tcp:1.1.1.1"}, 2)
+
+		dnsClient, err := retryabledns.New([]string{
+			"udp:8.8.8.8:53",         // Google
+			"udp:8.8.4.4:53",         // Google
+			"udp:9.9.9.9:53",         // Quad9
+			"udp:149.112.112.112:53", // Quad9
+			"udp:208.67.222.222:53",  // Open DNS
+			"udp:208.67.220.220:53",  // Open DNS
+			"udp:1.1.1.1:53",         // Cloudflare
+			"udp:1.0.0.1:53",         // Cloudflare
+		}, 2)
 		dnsData, err := dnsClient.Resolve(target)
+
 		if err != nil || dnsData == nil {
 			gologger.Warning().Msgf("Could not get IP for host: %s\n", target)
 			return nil, nil, err

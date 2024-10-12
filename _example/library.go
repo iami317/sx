@@ -33,6 +33,7 @@ func main() {
 		Timeout:    runner.DefaultPortTimeoutSynScan,
 		WarmUpTime: 20,
 		Debug:      true,
+		Resolvers:  "udp:8.8.8.8:53,udp:8.8.4.4:53,udp:9.9.9.9:53,udp:149.112.112.112:53,udp:208.67.222.222:53",
 		//Verbose: true,
 
 		OnResult: func(hostResult *result.HostResult) {

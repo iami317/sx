@@ -428,6 +428,16 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				if r.scanner.ScanResults.HasSkipped(ip) {
 					continue
 				}
+				excludedIPs, _ := r.parseExcludedIps(r.options)
+				var skipFlag bool
+				for _, v := range excludedIPs {
+					if v == ip {
+						skipFlag = true
+					}
+				}
+				if skipFlag {
+					continue
+				}
 				if r.options.PortThreshold > 0 && r.scanner.ScanResults.GetPortCount(ip) >= r.options.PortThreshold {
 					hosts, _ := r.scanner.IPRanger.GetHostsByIP(ip)
 					logx.Infof("Skipping %s %v, Threshold reached ", ip, hosts)
@@ -451,7 +461,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 					logx.Debugf("Skipping %s: %v", targetWithPort, err)
 					continue
 				}
-
 				// naive port find
 				pp, err := strconv.Atoi(p)
 				if err != nil {

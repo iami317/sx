@@ -2,22 +2,37 @@ package runner
 
 import (
 	"fmt"
-	"github.com/iami317/logx"
+	"github.com/iami317/sx/pkg/scan"
+	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/retryabledns"
+	sliceutil "github.com/projectdiscovery/utils/slice"
 	"net"
 
-	"github.com/iami317/sx/pkg/scan"
 	iputil "github.com/projectdiscovery/utils/ip"
 	osutil "github.com/projectdiscovery/utils/os"
-	sliceutil "github.com/projectdiscovery/utils/slice"
 )
 
+// dnsClient, err := retryabledns.New([]string{"8.8.8.8:53", "8.8.4.4:53", "tcp:1.1.1.1"}, 2)
+// dnsData, err := dnsClient.Resolve(target)
 func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []string, err error) {
 	// If the host is a Domain, then perform resolution and discover all IP
 	// addresses for a given host. Else use that host for port scanning
 	if !iputil.IsIP(target) {
-		dnsData, err := r.dnsClient.QueryMultiple(target)
+		//dnsData, err := r.dnsClient.QueryMultiple(target)
+		//dnsClient, err := retryabledns.New([]string{"8.8.8.8:53", "8.8.4.4:53", "tcp:1.1.1.1"}, 2)
+
+		dnsClient, err := retryabledns.New([]string{
+			"114.114.114.114:53",
+			"8.8.8.8:53",        // Google
+			"208.67.222.222:53", // Open DNS
+			"208.67.220.220:53", // Open DNS
+			"1.1.1.1:53",        // Cloudflare
+			"1.0.0.1:53",        // Cloudflare
+		}, 2)
+		dnsData, err := dnsClient.Resolve(target)
+
 		if err != nil || dnsData == nil {
-			logx.Warnf("Could not get IP for host: %s", target)
+			gologger.Warning().Msgf("Could not get IP for host: %s\n", target)
 			return nil, nil, err
 		}
 		if len(r.options.IPVersion) > 0 {
@@ -35,7 +50,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 		}
 	} else {
 		targetIPsV4 = append(targetIPsV6, target)
-		logx.Debugf("Found %d addresses for %s", len(targetIPsV4), target)
+		gologger.Debug().Msgf("Found %d addresses for %s\n", len(targetIPsV4), target)
 	}
 
 	return

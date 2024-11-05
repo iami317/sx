@@ -48,6 +48,9 @@ type Phase struct {
 }
 
 func (phase *Phase) Is(state State) bool {
+	if phase == nil {
+		return false
+	}
 	phase.RLock()
 	defer phase.RUnlock()
 

@@ -97,6 +97,7 @@ type Scanner struct {
 	stream               bool
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
+	OnProgress           result.ProgressFn
 }
 
 // PkgSend is a TCP package
@@ -143,6 +144,7 @@ func NewScanner(options *Options) (*Scanner, error) {
 		tcpSequencer:  NewTCPSequencer(),
 		IPRanger:      iprang,
 		OnReceive:     options.OnReceive,
+		OnProgress:    options.OnProgress,
 	}
 
 	scanner.HostDiscoveryResults = result.NewResult()

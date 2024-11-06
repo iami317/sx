@@ -114,6 +114,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		ProxyAuth:     options.ProxyAuth,
 		Stream:        options.Stream,
 		OnReceive:     options.OnReceive,
+		OnProgress:    options.OnProgress,
 	}
 
 	if scanOpts.OnReceive == nil {
@@ -451,6 +452,9 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				} else {
 					r.wgScan.Add()
 					go r.handleHostPort(ctx, ip, port)
+					if r.scanner.OnProgress != nil {
+						r.scanner.OnProgress(uint64(index), Range)
+					}
 				}
 			}
 
@@ -706,6 +710,7 @@ func (r *Runner) handleHostPort(ctx context.Context, host string, p *port.Port) 
 				r.scanner.OnReceive(&result.HostResult{IP: host, Ports: []*port.Port{p}})
 			}
 		}
+
 	}
 }
 

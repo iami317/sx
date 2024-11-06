@@ -23,30 +23,30 @@ type Options struct {
 	ExcludeCDN     bool // Excludes ip of knows CDN ranges for full port scan
 	InterfacesList bool // InterfacesList show interfaces list
 
-	Retries       int                 // Retries is the number of retries for the port
-	Rate          int                 // Rate is the rate of port scan requests
-	Timeout       int                 // Timeout is the seconds to wait for ports to respond
-	WarmUpTime    int                 // WarmUpTime between scan phases
-	Host          goflags.StringSlice // Host is the single host or comma-separated list of hosts to find ports for
-	Ports         string              // Ports is the ports to use for enumeration
-	ExcludePorts  string              // ExcludePorts is the list of ports to exclude from enumeration
-	ExcludeIps    string              // Ips or cidr to be excluded from the scan
-	TopPorts      string              // Tops ports to scan
-	PortThreshold int                 // PortThreshold is the number of ports to find before skipping the host
-	SourceIP      string              // SourceIP to use in TCP packets
-	SourcePort    string              // Source Port to use in packets
-	Interface     string              // Interface to use for TCP packets
-	Threads       int                 // Internal worker threads
-	ScanAllIPS    bool                // Scan all the ips
-	IPVersion     goflags.StringSlice // IP Version to use while resolving hostnames
-	ScanType      string              // Scan Type
-	Proxy         string              // Socks5 proxy
-	ProxyAuth     string              // Socks5 proxy authentication (username:password)
-	Resolvers     string              // Resolvers (comma separated or file)
-	baseResolvers []string
-	OnResult      result.ResultFn // callback on final host result
-	OnReceive     result.ResultFn // callback on response receive
-	//OnProgress        result.ProgressFn
+	Retries           int                 // Retries is the number of retries for the port
+	Rate              int                 // Rate is the rate of port scan requests
+	Timeout           int                 // Timeout is the seconds to wait for ports to respond
+	WarmUpTime        int                 // WarmUpTime between scan phases
+	Host              goflags.StringSlice // Host is the single host or comma-separated list of hosts to find ports for
+	Ports             string              // Ports is the ports to use for enumeration
+	ExcludePorts      string              // ExcludePorts is the list of ports to exclude from enumeration
+	ExcludeIps        string              // Ips or cidr to be excluded from the scan
+	TopPorts          string              // Tops ports to scan
+	PortThreshold     int                 // PortThreshold is the number of ports to find before skipping the host
+	SourceIP          string              // SourceIP to use in TCP packets
+	SourcePort        string              // Source Port to use in packets
+	Interface         string              // Interface to use for TCP packets
+	Threads           int                 // Internal worker threads
+	ScanAllIPS        bool                // Scan all the ips
+	IPVersion         goflags.StringSlice // IP Version to use while resolving hostnames
+	ScanType          string              // Scan Type
+	Proxy             string              // Socks5 proxy
+	ProxyAuth         string              // Socks5 proxy authentication (username:password)
+	Resolvers         string              // Resolvers (comma separated or file)
+	baseResolvers     []string
+	OnResult          result.ResultFn // callback on final host result
+	OnReceive         result.ResultFn // callback on response receive
+	OnProgress        result.ProgressFn
 	Stream            bool
 	Passive           bool
 	OutputCDN         bool // display cdn in use

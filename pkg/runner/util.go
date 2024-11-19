@@ -52,6 +52,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 		targetIPsV4 = append(targetIPsV6, target)
 		gologger.Debug().Msgf("Found %d addresses for %s\n", len(targetIPsV4), target)
 	}
+	//fmt.Println(targetIPsV6)
 	return
 }
 

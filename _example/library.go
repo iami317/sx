@@ -14,7 +14,7 @@ func main() {
 	t := time.Now()
 	options := &runner.Options{
 		//Proxy:    "socks5://192.168.8.109:8888",
-		Host: goflags.StringSlice([]string{"192.168.100.0/24"}),
+		Host: goflags.StringSlice([]string{"www.bilibili.com"}),
 		//Host:     goflags.StringSlice([]string{"192.168.100.149"}),
 		ScanType: runner.SynScan,
 		//ScanType: runner.ConnectScan,
@@ -56,10 +56,10 @@ func main() {
 
 			}
 		},
-		OnProgress: func(c, e uint64) {
-			fmt.Println(c)
-			fmt.Println(e)
-		},
+		//OnProgress: func(c, e uint64) {
+		//	fmt.Println(c)
+		//	fmt.Println(e)
+		//},
 	}
 	nbxRunner, err := runner.NewRunner(options)
 	if err != nil {

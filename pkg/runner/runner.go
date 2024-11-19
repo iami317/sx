@@ -278,7 +278,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		}
 
 		if r.options.WarmUpTime > 0 {
-			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Second)
+			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Millisecond)
 		}
 
 		// check if we should stop here or continue with full scan
@@ -425,7 +425,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				ip := r.PickIP(targets, ipIndex)
 				port := r.PickPort(portIndex)
 				r.limiter.Take()
-
 				if r.scanner.ScanResults.HasSkipped(ip) {
 					continue
 				}
@@ -489,7 +488,8 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		}
 
 		if r.options.WarmUpTime > 0 {
-			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Second)
+			fmt.Println("-------")
+			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Millisecond)
 		}
 
 		r.scanner.ListenHandler.Phase.Set(scan.Done)

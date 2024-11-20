@@ -22,9 +22,9 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 		//dnsClient, err := retryabledns.New([]string{"8.8.8.8:53", "8.8.4.4:53", "tcp:1.1.1.1"}, 2)
 
 		dnsClient, err := retryabledns.New([]string{
-			"223.5.5.5",       //阿里dns
+			"223.5.5.5",       // 阿里dns
 			"8.8.8.8:53",      // Google
-			"119.29.29.29",    //腾讯dns
+			"119.29.29.29",    // 腾讯dns
 			"114.114.114.114", // 114dns
 			"180.76.76.76",    // 百度dns
 			"1.2.4.8",         // cnnicDns

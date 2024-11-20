@@ -488,7 +488,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		}
 
 		if r.options.WarmUpTime > 0 {
-			fmt.Println("-------")
 			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Millisecond)
 		}
 

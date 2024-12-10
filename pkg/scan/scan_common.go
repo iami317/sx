@@ -52,7 +52,7 @@ func Acquire() (*ListenHandler, error) {
 			return listenHandler, nil
 		}
 	}
-	return nil, errors.New("no free handlers")
+	return nil, errors.New("no free ListenHandler")
 }
 
 func (l *ListenHandler) Release() {

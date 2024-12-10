@@ -2,6 +2,7 @@ package scan
 
 import (
 	"errors"
+	"fmt"
 	"net"
 
 	"github.com/iami317/sx/pkg/privileges"
@@ -39,10 +40,11 @@ type ListenHandler struct {
 
 func Acquire() (*ListenHandler, error) {
 	// always grant to unprivileged scans
+	fmt.Println("privileges.IsPrivileged:", privileges.IsPrivileged)
 	if !privileges.IsPrivileged {
 		return &ListenHandler{Phase: &Phase{}}, nil
 	}
-
+	fmt.Println("ListenHandler length:", len(ListenHandlers))
 	for _, listenHandler := range ListenHandlers {
 		if !listenHandler.Busy {
 			listenHandler.Phase = &Phase{}

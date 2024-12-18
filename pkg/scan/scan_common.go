@@ -26,7 +26,7 @@ var (
 
 	ArpRequestAsync  func(ip string)
 	InitScanner      func(s *Scanner) error
-	NumberOfHandlers = 1
+	NumberOfHandlers = 10
 	tcpsequencer     = NewTCPSequencer()
 )
 

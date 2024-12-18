@@ -525,7 +525,7 @@ func TransportReadWorker() {
 			sourcePortMatches := tcpPortMatches || udpPortMatches
 			switch {
 			case !sourcePortMatches:
-				logx.Debugf("Discarding Transport packet from non target ips: ip4=%s ip6=%s tcp_dport=%d udp_dport=%d", srcIP4, srcIP6, tcp.DstPort, udp.DstPort)
+				//logx.Debugf("Discarding Transport packet from non target ips: ip4=%s ip6=%s tcp_dport=%d udp_dport=%d", srcIP4, srcIP6, tcp.DstPort, udp.DstPort)
 			case listenHandler.Phase.Is(HostDiscovery):
 				proto := protocol.TCP
 				if udpPortMatches {

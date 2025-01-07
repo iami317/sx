@@ -258,7 +258,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	}
 
 	// Scan workers
-	r.wgScan = sizedwaitgroup.New(r.options.Threads)
+	r.wgScan = sizedwaitgroup.New(r.options.Rate)
 	r.limiter = ratelimit.New(context.Background(), uint(r.options.Rate), time.Second)
 
 	shouldDiscoverHosts := r.options.shouldDiscoverHosts()

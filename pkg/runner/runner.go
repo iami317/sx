@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 	"sync"
 	"time"
@@ -218,7 +219,11 @@ func (r *Runner) onReceive(hostResult *result.HostResult) {
 func (r *Runner) RunEnumeration(pctx context.Context) error {
 	ctx, cancel := context.WithCancel(pctx)
 	defer cancel()
-
+	defer func() {
+		if rc := recover(); rc != nil {
+			logx.Errorf("sx扫描失败%s", string(debug.Stack()))
+		}
+	}()
 	if privileges.IsPrivileged && r.options.ScanType == SynScan {
 		if r.options.SourceIP != "" {
 			logx.Verbosef("设置源IP:%v", r.options.SourceIP)
@@ -253,7 +258,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	}
 
 	// Scan workers
-	r.wgScan = sizedwaitgroup.New(r.options.Rate)
+	r.wgScan = sizedwaitgroup.New(r.options.Threads)
 	r.limiter = ratelimit.New(context.Background(), uint(r.options.Rate), time.Second)
 
 	shouldDiscoverHosts := r.options.shouldDiscoverHosts()

@@ -264,7 +264,11 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	shouldDiscoverHosts := r.options.shouldDiscoverHosts()
 	shouldUseRawPackets := r.options.shouldUseRawPackets()
 
+	//fmt.Println("shouldDiscoverHosts", shouldDiscoverHosts)
+	//fmt.Println("shouldUseRawPackets", shouldUseRawPackets)
+
 	if shouldDiscoverHosts && shouldUseRawPackets {
+		// perform host discovery
 		showHostDiscoveryInfo()
 		r.scanner.ListenHandler.Phase.Set(scan.HostDiscovery)
 		// shrinks the ips to the minimum amount of cidr
@@ -273,17 +277,37 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			return err
 		}
 
-		//获取执行的具体 ip
-		ips := r.GetTargetIp(targetsV4, targetsv6)
-		if len(ips) == 0 {
-			return fmt.Errorf("no valid ipv4 or ipv6 targets were found")
+		// get excluded ips
+		excludedIPs, err := r.parseExcludedIps(r.options)
+		if err != nil {
+			return err
 		}
-		for _, ip := range ips {
-			r.handleHostDiscovery(ip)
+
+		// store exclued ips to a map
+		excludedIPsMap := make(map[string]struct{})
+		for _, ipString := range excludedIPs {
+			excludedIPsMap[ipString] = struct{}{}
+		}
+
+		discoverCidr := func(cidr *net.IPNet) {
+			ipStream, _ := mapcidr.IPAddressesAsStream(cidr.String())
+			for ip := range ipStream {
+				// only run host discovery if the ip is not present in the excludedIPsMap
+				if _, exists := excludedIPsMap[ip]; !exists {
+					r.handleHostDiscovery(ip)
+				}
+			}
+		}
+
+		for _, target4 := range targetsV4 {
+			discoverCidr(target4)
+		}
+		for _, target6 := range targetsv6 {
+			discoverCidr(target6)
 		}
 
 		if r.options.WarmUpTime > 0 {
-			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Millisecond)
+			time.Sleep(time.Duration(r.options.WarmUpTime) * time.Second)
 		}
 
 		// check if we should stop here or continue with full scan

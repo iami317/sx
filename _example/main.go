@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/iami317/logx"
+	"github.com/iami317/sx/pkg/result"
 	"os"
 	"os/signal"
 
@@ -12,6 +14,15 @@ import (
 
 func main() {
 	options := runner.ParseOptions()
+	onReceive := func(hostResult *result.HostResult) {
+		fmt.Println("onReceive", hostResult)
+
+	}
+	onResult := func(hostResult *result.HostResult) {
+		fmt.Println("onResult", hostResult)
+	}
+	options.OnResult = onResult
+	options.OnReceive = onReceive
 	naabuRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
@@ -30,6 +41,7 @@ func main() {
 	}()
 
 	err = naabuRunner.RunEnumeration(context.TODO())
+
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)
 	}

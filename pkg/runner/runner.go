@@ -264,8 +264,8 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	shouldDiscoverHosts := r.options.shouldDiscoverHosts()
 	shouldUseRawPackets := r.options.shouldUseRawPackets()
 
-	fmt.Println("shouldDiscoverHosts", shouldDiscoverHosts)
-	fmt.Println("shouldUseRawPackets", shouldUseRawPackets)
+	//fmt.Println("shouldDiscoverHosts", shouldDiscoverHosts)
+	//fmt.Println("shouldUseRawPackets", shouldUseRawPackets)
 
 	if shouldDiscoverHosts && shouldUseRawPackets {
 		// perform host discovery

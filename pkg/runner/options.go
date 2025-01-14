@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"fmt"
 	"github.com/iami317/logx"
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/result"
@@ -139,12 +138,6 @@ func ParseOptions() *Options {
 	)
 
 	_ = flagSet.Parse()
-	fmt.Println("0", options)
-	fmt.Println("1", options.OnlyHostDiscovery)
-	fmt.Println("2", options.IcmpEchoRequestProbe)
-	fmt.Println("3", options.IcmpTimestampRequestProbe)
-	fmt.Println("4", options.IcmpAddressMaskRequestProbe)
-	fmt.Println("5", options.IPVersion)
 	// Show network configuration and exit if the user requested it
 	if options.InterfacesList {
 		err := showNetworkInterfaces()

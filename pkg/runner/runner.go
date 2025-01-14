@@ -264,8 +264,8 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	shouldDiscoverHosts := r.options.shouldDiscoverHosts()
 	shouldUseRawPackets := r.options.shouldUseRawPackets()
 
-	//fmt.Println("shouldDiscoverHosts", shouldDiscoverHosts)
-	//fmt.Println("shouldUseRawPackets", shouldUseRawPackets)
+	fmt.Println("shouldDiscoverHosts", shouldDiscoverHosts)
+	fmt.Println("shouldUseRawPackets", shouldUseRawPackets)
 
 	if shouldDiscoverHosts && shouldUseRawPackets {
 		// perform host discovery
@@ -747,27 +747,33 @@ func (r *Runner) handleHostDiscovery(host string) {
 	// Pings
 	// - Icmp Echo Request
 	if r.options.IcmpEchoRequestProbe {
+		fmt.Println("Icmp Echo Request start")
 		r.scanner.EnqueueICMP(host, scan.IcmpEchoRequest)
 	}
 	// - Icmp Timestamp Request
 	if r.options.IcmpTimestampRequestProbe {
+		fmt.Println("Icmp Timestamp Request start")
 		r.scanner.EnqueueICMP(host, scan.IcmpTimestampRequest)
 	}
 	// - Icmp Netmask Request
 	if r.options.IcmpAddressMaskRequestProbe {
+		fmt.Println("Icmp Netmask Request start")
 		r.scanner.EnqueueICMP(host, scan.IcmpAddressMaskRequest)
 	}
 	// ARP scan
 	if r.options.ArpPing {
+		fmt.Println("ARP scan start")
 		r.scanner.EnqueueEthernet(host, scan.Arp)
 	}
 	// Syn Probes
 	if len(r.options.TcpSynPingProbes) > 0 {
+		fmt.Println("Syn Probes")
 		ports, _ := parsePortsSlice(r.options.TcpSynPingProbes)
 		r.scanner.EnqueueTCP(host, scan.Syn, ports...)
 	}
 	// Ack Probes
 	if len(r.options.TcpAckPingProbes) > 0 {
+		fmt.Println("Ack Probes")
 		ports, _ := parsePortsSlice(r.options.TcpAckPingProbes)
 		r.scanner.EnqueueTCP(host, scan.Ack, ports...)
 	}

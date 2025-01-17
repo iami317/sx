@@ -473,7 +473,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 					r.scanner.ScanResults.AddSkipped(ip)
 					continue
 				}
-
 				// connect scan
 				if shouldUseRawPackets {
 					r.RawSocketEnumeration(ctx, ip, port)
@@ -735,7 +734,10 @@ func (r *Runner) handleHostPort(ctx context.Context, host string, p *port.Port) 
 		if open && err == nil {
 			r.scanner.ScanResults.AddPort(host, p)
 			if r.scanner.OnReceive != nil {
-				r.scanner.OnReceive(&result.HostResult{IP: host, Ports: []*port.Port{p}})
+				dt, _ := r.scanner.IPRanger.GetHostsByIP(host)
+				for _, domain := range dt {
+					r.scanner.OnReceive(&result.HostResult{Host: domain, IP: host, Ports: []*port.Port{p}})
+				}
 			}
 		}
 

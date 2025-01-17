@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"runtime/debug"
 	"strconv"
 	"sync"
@@ -736,7 +737,12 @@ func (r *Runner) handleHostPort(ctx context.Context, host string, p *port.Port) 
 			if r.scanner.OnReceive != nil {
 				dt, _ := r.scanner.IPRanger.GetHostsByIP(host)
 				for _, domain := range dt {
-					r.scanner.OnReceive(&result.HostResult{Host: domain, IP: host, Ports: []*port.Port{p}})
+					isDomain := IsDomain(domain)
+					if isDomain {
+						r.scanner.OnReceive(&result.HostResult{Host: domain, IP: host, Ports: []*port.Port{p}})
+					} else {
+						r.scanner.OnReceive(&result.HostResult{Host: "", IP: host, Ports: []*port.Port{p}})
+					}
 				}
 			}
 		}
@@ -744,6 +750,18 @@ func (r *Runner) handleHostPort(ctx context.Context, host string, p *port.Port) 
 	}
 }
 
+func IsDomain(input string) bool {
+	u, err := url.ParseRequestURI(fmt.Sprintf("http://%s", input))
+	if err != nil {
+		return false
+	}
+	r, _ := regexp.Compile("^[a-zA-Z0-9]+([\\-\\.][a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}$")
+	if r.MatchString(u.Host) {
+		return true
+	} else {
+		return false
+	}
+}
 func (r *Runner) handleHostDiscovery(host string) {
 	r.limiter.Take()
 	// Pings

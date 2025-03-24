@@ -3,6 +3,8 @@ package scan
 import (
 	"errors"
 	"net"
+	"sync"
+	"time"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/routing"
@@ -20,6 +22,7 @@ var (
 	networkInterface                                        *net.Interface
 	transportPacketSend, icmpPacketSend, ethernetPacketSend chan *PkgSend
 	icmpConn4, icmpConn6                                    *icmp.PacketConn
+	mu                                                      sync.Mutex
 
 	pkgRouter routing.Router
 
@@ -42,13 +45,23 @@ func Acquire() (*ListenHandler, error) {
 	if !privileges.IsPrivileged {
 		return &ListenHandler{Phase: &Phase{}}, nil
 	}
-	for _, listenHandler := range ListenHandlers {
-		if !listenHandler.Busy {
-			listenHandler.Phase = &Phase{}
-			listenHandler.Busy = true
-			return listenHandler, nil
+	maxRetries := 3
+	for i := 0; i < maxRetries; i++ {
+		mu.Lock()
+		for _, listenHandler := range ListenHandlers {
+			if !listenHandler.Busy {
+				listenHandler.Phase = &Phase{}
+				listenHandler.Busy = true
+				mu.Unlock()
+				return listenHandler, nil
+			}
+		}
+		mu.Unlock()
+		if i < maxRetries-1 {
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
+
 	return nil, errors.New("no free ListenHandler:" + string(len(ListenHandlers)))
 }
 

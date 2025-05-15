@@ -10,6 +10,7 @@ import (
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"os"
 	"os/signal"
+	"strings"
 )
 
 //func main() {
@@ -217,6 +218,10 @@ func main() {
 	}
 	options.OnResult = onResult
 	options.OnReceive = onReceive
+	options.OnProgress = func(c, f uint64) {
+		PrintProgress(c, f)
+	}
+	options.Rate = 1000000
 	naabuRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
@@ -239,4 +244,15 @@ func main() {
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)
 	}
+}
+
+// 动态打印进度条
+func PrintProgress(current, total uint64) {
+	percent := float64(current) / float64(total) * 100
+	barWidth := 50
+	filledWidth := int(percent / 100 * float64(barWidth))
+	emptyWidth := barWidth - filledWidth
+
+	bar := strings.Repeat("█", filledWidth) + strings.Repeat(" ", emptyWidth)
+	fmt.Printf("\r进度: [%s] %.1f%% (%d/%d)", bar, percent, current, total)
 }

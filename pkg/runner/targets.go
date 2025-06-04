@@ -210,7 +210,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 
 	for _, hostIP := range hostIPS {
 		if r.scanner.IPRanger.Contains(hostIP) {
-			logx.Debugf("Using ip %s for host %s enumeration", hostIP, target)
+			//logx.Debugf("Using ip %s for host %s enumeration", hostIP, target)
 		}
 	}
 

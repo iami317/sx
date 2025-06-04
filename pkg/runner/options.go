@@ -12,7 +12,6 @@ import (
 
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	updateutils "github.com/projectdiscovery/utils/update"
 )
 
 // Options contains the configuration options for tuning
@@ -25,7 +24,6 @@ type Options struct {
 	Silent         bool // Silent suppresses any extra text and only writes found host:port to screen
 	Stdin          bool // Stdin specifies whether stdin input was given to the process
 	Verify         bool // Verify is used to check if the ports found were valid using CONNECT method
-	Version        bool // Version specifies if we should just show version and exit
 	Ping           bool // Ping uses ping probes to discover fastest active host and discover dead hosts
 	Debug          bool // Prints out debug information
 	ExcludeCDN     bool // Excludes ip of knows CDN ranges for full port scan
@@ -96,8 +94,6 @@ type Options struct {
 	ServiceVersion bool
 	// ReversePTR lookup for ips
 	ReversePTR bool
-	//DisableUpdateCheck disables automatic update check
-	DisableUpdateCheck bool
 	// MetricsPort with statistics
 	MetricsPort int
 }
@@ -108,7 +104,7 @@ func ParseOptions() *Options {
 	var cfgFile string
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`Naabu is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
+	flagSet.SetDescription(`sx is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
 
 	flagSet.CreateGroup("input", "Input",
 		flagSet.StringSliceVarP(&options.Host, "host", "", nil, "hosts to scan ports for (comma-separated)", goflags.NormalizedStringSliceOptions),
@@ -132,11 +128,6 @@ func ParseOptions() *Options {
 		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "packets to send per second"),
 	)
 
-	flagSet.CreateGroup("update", "Update",
-		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update naabu to latest version"),
-		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic naabu update check"),
-	)
-
 	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.Output, "output", "o", "", "file to write output to (optional)"),
 		flagSet.BoolVarP(&options.JSON, "json", "j", false, "write output in JSON lines format"),
@@ -144,7 +135,7 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("config", "Configuration",
-		flagSet.StringVar(&cfgFile, "config", "", "path to the naabu configuration file (default $HOME/.config/naabu/config.yaml)"),
+		flagSet.StringVar(&cfgFile, "config", "", "path to the sx configuration file (default $HOME/.config/sx/config.yaml)"),
 		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "scan all the IP's associated with DNS record"),
 		flagSet.StringSliceVarP(&options.IPVersion, "iv", "ip-version", []string{scan.IPv4}, "ip version to scan of hostname (4,6) - (default 4)", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", ConnectScan, "type of port scan (SYN/CONNECT)"),
@@ -202,10 +193,9 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "display verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "nc", "no-color", false, "disable colors in CLI output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
-		flagSet.BoolVar(&options.Version, "version", false, "display version of naabu"),
 		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "display stats of the running scan (deprecated)"),
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update (deprecated)"),
-		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose naabu metrics on"),
+		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose sx metrics on"),
 	)
 
 	_ = flagSet.Parse()
@@ -235,28 +225,12 @@ func ParseOptions() *Options {
 		}
 	}
 	options.configureOutput()
-	// Show the user the banner
-	showBanner()
-
-	if options.Version {
-		gologger.Info().Msgf("Current Version: %s\n", version)
-		os.Exit(0)
-	}
-
-	if !options.DisableUpdateCheck {
-		latestVersion, err := updateutils.GetToolVersionCallback("naabu", version)()
-		if err != nil {
-			gologger.Verbose().Msgf("naabu version check failed: %v", err.Error())
-		} else {
-			gologger.Info().Msgf("Current naabu version %v %v", version, updateutils.GetVersionDescription(version, latestVersion))
-		}
-	}
 
 	// Show network configuration and exit if the user requested it
 	if options.InterfacesList {
 		err := showNetworkInterfaces()
 		if err != nil {
-			gologger.Error().Msgf("Could not get network interfaces: %s\n", err)
+			gologger.Error().Msgf("could not get network interfaces: %s\n", err)
 		}
 		os.Exit(0)
 	}
@@ -265,7 +239,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err := options.ValidateOptions()
 	if err != nil {
-		gologger.Fatal().Msgf("Program exiting: %s\n", err)
+		gologger.Fatal().Msgf("program exiting: %s\n", err)
 	}
 
 	return options

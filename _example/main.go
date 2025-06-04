@@ -58,7 +58,7 @@ func icmpTest() {
 	}
 	options.OnResult = onResult
 	options.OnReceive = onReceive
-	naabuRunner, err := runner.NewRunner(options)
+	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
 		return
@@ -68,14 +68,14 @@ func icmpTest() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			naabuRunner.ShowScanResultOnExit()
+			sxRunner.ShowScanResultOnExit()
 			logx.Infof("CTRL+C pressed: Exiting")
-			naabuRunner.Close()
+			sxRunner.Close()
 			os.Exit(1)
 		}
 	}()
 
-	err = naabuRunner.RunEnumeration(context.TODO())
+	err = sxRunner.RunEnumeration(context.TODO())
 
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)
@@ -119,7 +119,7 @@ func arpTest() {
 	}
 	options.OnResult = onResult
 	options.OnReceive = onReceive
-	naabuRunner, err := runner.NewRunner(options)
+	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
 		return
@@ -129,14 +129,14 @@ func arpTest() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			naabuRunner.ShowScanResultOnExit()
+			sxRunner.ShowScanResultOnExit()
 			logx.Infof("CTRL+C pressed: Exiting")
-			naabuRunner.Close()
+			sxRunner.Close()
 			os.Exit(1)
 		}
 	}()
 
-	err = naabuRunner.RunEnumeration(context.TODO())
+	err = sxRunner.RunEnumeration(context.TODO())
 
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)
@@ -180,7 +180,7 @@ func tcpTest() {
 	}
 	options.OnResult = onResult
 	options.OnReceive = onReceive
-	naabuRunner, err := runner.NewRunner(options)
+	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
 		return
@@ -190,14 +190,14 @@ func tcpTest() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			naabuRunner.ShowScanResultOnExit()
+			sxRunner.ShowScanResultOnExit()
 			logx.Infof("CTRL+C pressed: Exiting")
-			naabuRunner.Close()
+			sxRunner.Close()
 			os.Exit(1)
 		}
 	}()
 
-	err = naabuRunner.RunEnumeration(context.TODO())
+	err = sxRunner.RunEnumeration(context.TODO())
 
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)
@@ -221,7 +221,7 @@ func main() {
 	//	PrintProgress(c, f)
 	//}
 	options.Rate = 10000
-	naabuRunner, err := runner.NewRunner(options)
+	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)
 		return
@@ -231,14 +231,14 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			naabuRunner.ShowScanResultOnExit()
+			sxRunner.ShowScanResultOnExit()
 			logx.Infof("CTRL+C pressed: Exiting")
-			naabuRunner.Close()
+			sxRunner.Close()
 			os.Exit(1)
 		}
 	}()
 
-	err = naabuRunner.RunEnumeration(context.TODO())
+	err = sxRunner.RunEnumeration(context.TODO())
 
 	if err != nil {
 		logx.Errorf("Could not run enumeration: %s", err)

@@ -8,17 +8,7 @@ import (
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/gologger"
 	osutil "github.com/projectdiscovery/utils/os"
-	updateutils "github.com/projectdiscovery/utils/update"
 )
-
-const banner = ``
-
-// Version is the current version of naabu
-const version = ``
-
-// showBanner is used to show the banner to the user
-func showBanner() {
-}
 
 // showNetworkCapabilities shows the network capabilities/scan types possible with the running user
 func showNetworkCapabilities(options *Options) {
@@ -81,12 +71,4 @@ func showNetworkInterfaces() error {
 	gologger.Info().Msgf("External Ip: %s\n", externalIP)
 
 	return nil
-}
-
-// GetUpdateCallback returns a callback function that updates naabu
-func GetUpdateCallback() func() {
-	return func() {
-		showBanner()
-		updateutils.GetUpdateToolCallback("naabu", version)()
-	}
 }

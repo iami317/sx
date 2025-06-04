@@ -3,6 +3,7 @@ package runner
 import (
 	"strings"
 
+	fileutil "github.com/projectdiscovery/utils/file"
 	iputil "github.com/projectdiscovery/utils/ip"
 )
 
@@ -10,6 +11,20 @@ func (r *Runner) parseExcludedIps(options *Options) ([]string, error) {
 	var excludedIps []string
 	if options.ExcludeIps != "" {
 		for _, host := range strings.Split(options.ExcludeIps, ",") {
+			ips, err := r.getExcludeItems(host)
+			if err != nil {
+				return nil, err
+			}
+			excludedIps = append(excludedIps, ips...)
+		}
+	}
+
+	if options.ExcludeIpsFile != "" {
+		cdata, err := fileutil.ReadFile(options.ExcludeIpsFile)
+		if err != nil {
+			return excludedIps, err
+		}
+		for host := range cdata {
 			ips, err := r.getExcludeItems(host)
 			if err != nil {
 				return nil, err

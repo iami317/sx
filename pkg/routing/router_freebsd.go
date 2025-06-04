@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build freebsd
 
 package routing
 
@@ -17,7 +17,7 @@ import (
 	"go.uber.org/multierr"
 )
 
-// New creates a routing engine for Darwin
+// New creates a routing engine for FreeBSD
 func New() (Router, error) {
 	var routes []*Route
 	netstatCmd := exec.Command("netstat", "-nr")
@@ -60,7 +60,7 @@ func New() (Router, error) {
 			routes = append(routes, route6)
 		}
 		if len(routes) > 0 {
-			return &RouterDarwin{Routes: routes}, nil
+			return &RouterFreebsd{Routes: routes}, nil
 		}
 		return nil, multierr.Combine(err, errOutboundIps)
 	}
@@ -115,14 +115,14 @@ func New() (Router, error) {
 		}
 	}
 
-	return &RouterDarwin{Routes: routes}, err
+	return &RouterFreebsd{Routes: routes}, err
 }
 
-type RouterDarwin struct {
+type RouterFreebsd struct {
 	Routes []*Route
 }
 
-func (r *RouterDarwin) Route(dst net.IP) (iface *net.Interface, gateway, preferredSrc net.IP, err error) {
+func (r *RouterFreebsd) Route(dst net.IP) (iface *net.Interface, gateway, preferredSrc net.IP, err error) {
 	route, err := FindRouteForIp(dst, r.Routes)
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "could not find route")
@@ -143,7 +143,7 @@ func (r *RouterDarwin) Route(dst net.IP) (iface *net.Interface, gateway, preferr
 	return route.NetworkInterface, net.ParseIP(route.Gateway), ip, nil
 }
 
-func (r *RouterDarwin) RouteWithSrc(input net.HardwareAddr, src, dst net.IP) (iface *net.Interface, gateway, preferredSrc net.IP, err error) {
+func (r *RouterFreebsd) RouteWithSrc(input net.HardwareAddr, src, dst net.IP) (iface *net.Interface, gateway, preferredSrc net.IP, err error) {
 	route, err := FindRouteWithHwAndIp(input, src, r.Routes)
 	if err != nil {
 		return nil, nil, nil, err

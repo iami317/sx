@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/iami317/logx"
 	"io"
 	"net"
-	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -16,7 +14,9 @@ import (
 	"github.com/iami317/sx/pkg/port"
 	"github.com/iami317/sx/pkg/protocol"
 	"github.com/iami317/sx/pkg/result"
+	"github.com/iami317/sx/pkg/utils/limits"
 	"github.com/projectdiscovery/cdncheck"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/networkpolicy"
 	"golang.org/x/net/proxy"
@@ -48,9 +48,6 @@ type Phase struct {
 }
 
 func (phase *Phase) Is(state State) bool {
-	if phase == nil {
-		return false
-	}
 	phase.RLock()
 	defer phase.RUnlock()
 
@@ -78,8 +75,6 @@ const (
 )
 
 type Scanner struct {
-	SourceIP4     net.IP
-	SourceIP6     net.IP
 	retries       int
 	rate          int
 	portThreshold int
@@ -93,11 +88,10 @@ type Scanner struct {
 	ScanResults          *result.Result
 	NetworkInterface     *net.Interface
 	cdn                  *cdncheck.Client
-	tcpSequencer         *TCPSequencer
+	tcpsequencer         *TCPSequencer
 	stream               bool
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
-	OnProgress           result.ProgressFn
 }
 
 // PkgSend is a TCP package
@@ -141,10 +135,9 @@ func NewScanner(options *Options) (*Scanner, error) {
 		retries:       options.Retries,
 		rate:          options.Rate,
 		portThreshold: options.PortThreshold,
-		tcpSequencer:  NewTCPSequencer(),
+		tcpsequencer:  NewTCPSequencer(),
 		IPRanger:      iprang,
 		OnReceive:     options.OnReceive,
-		OnProgress:    options.OnProgress,
 	}
 
 	scanner.HostDiscoveryResults = result.NewResult()
@@ -153,25 +146,20 @@ func NewScanner(options *Options) (*Scanner, error) {
 		scanner.cdn = cdncheck.New()
 	}
 
-	//var auth *proxy.Auth = nil
-	//
-	//if options.ProxyAuth != "" && strings.Contains(options.ProxyAuth, ":") {
-	//	credentials := strings.SplitN(options.ProxyAuth, ":", 2)
-	//	var user, password string
-	//	user = credentials[0]
-	//	if len(credentials) == 2 {
-	//		password = credentials[1]
-	//	}
-	//	auth = &proxy.Auth{User: user, Password: password}
-	//}
+	var auth *proxy.Auth = nil
+
+	if options.ProxyAuth != "" && strings.Contains(options.ProxyAuth, ":") {
+		credentials := strings.SplitN(options.ProxyAuth, ":", 2)
+		var user, password string
+		user = credentials[0]
+		if len(credentials) == 2 {
+			password = credentials[1]
+		}
+		auth = &proxy.Auth{User: user, Password: password}
+	}
 
 	if options.Proxy != "" {
-		//proxyDialer, err := proxy.SOCKS5("tcp", options.Proxy, auth, &net.Dialer{Timeout: options.Timeout})
-		u, err := url.Parse(options.Proxy)
-		if err != nil {
-			return nil, err
-		}
-		proxyDialer, err := proxy.FromURL(u, proxy.Direct)
+		proxyDialer, err := proxy.SOCKS5("tcp", options.Proxy, auth, &net.Dialer{Timeout: limits.TimeoutWithProxy(options.Timeout)})
 		if err != nil {
 			return nil, err
 		}
@@ -179,8 +167,14 @@ func NewScanner(options *Options) (*Scanner, error) {
 	}
 
 	scanner.stream = options.Stream
-
-	if handler, err := Acquire(); err != nil {
+acquire:
+	if handler, err := Acquire(options); err != nil {
+		// automatically fallback to connect scan
+		if options.ScanType == "s" {
+			gologger.Info().Msgf("syn scan is not possible, falling back to connect scan")
+			options.ScanType = "c"
+			goto acquire
+		}
 		return scanner, err
 	} else {
 		scanner.ListenHandler = handler
@@ -251,7 +245,7 @@ func (s *Scanner) ICMPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.HostDiscoveryChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Verbosef("Received ICMP response from %s", ip.ipv4)
+				gologger.Debug().Msgf("Received ICMP response from %s\n", ip.ipv4)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -274,7 +268,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				logx.Verbosef("Discarding Transport packet from non target ips: ip4=%s ip6=%s", ip.ipv4, ip.ipv6)
+				gologger.Debug().Msgf("Discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
 			}
 
 			if s.OnReceive != nil {
@@ -287,7 +281,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 				}
 			}
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Verbosef("Received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("Received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -295,7 +289,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				logx.Verbosef("Received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("Received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -315,7 +309,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.UdpChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Verbosef("Received UDP probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("Received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -323,7 +317,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				logx.Verbosef("Received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("Received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -382,7 +376,7 @@ func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) 
 		conn net.Conn
 	)
 	if s.proxyDialer != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), limits.TimeoutWithProxy(timeout))
 		defer cancel()
 		proxyDialer, ok := s.proxyDialer.(proxy.ContextDialer)
 		if !ok {
@@ -393,7 +387,15 @@ func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) 
 			return false, err
 		}
 	} else {
-		conn, err = net.DialTimeout(p.Protocol.String(), hostport, timeout)
+		netDialer := net.Dialer{
+			Timeout: timeout,
+		}
+		if s.ListenHandler.SourceIp4 != nil {
+			netDialer.LocalAddr = &net.TCPAddr{IP: s.ListenHandler.SourceIp4}
+		} else if s.ListenHandler.SourceIP6 != nil {
+			netDialer.LocalAddr = &net.TCPAddr{IP: s.ListenHandler.SourceIP6}
+		}
+		conn, err = netDialer.Dial(p.Protocol.String(), hostport)
 	}
 	if err != nil {
 		return false, err

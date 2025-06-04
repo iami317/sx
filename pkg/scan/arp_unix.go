@@ -4,11 +4,11 @@ package scan
 
 import (
 	"errors"
-	"github.com/iami317/logx"
 	"net"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket"
+	"github.com/gopacket/gopacket/layers"
+	"github.com/projectdiscovery/gologger"
 )
 
 func init() {
@@ -17,12 +17,12 @@ func init() {
 
 // ArpRequestAsync asynchronous to the target ip address
 func arpRequestAsync(ip string) {
-	networkInterface, _, sourceIP, err := pkgRouter.Route(net.ParseIP(ip))
+	networkInterface, _, sourceIP, err := PkgRouter.Route(net.ParseIP(ip))
 	if networkInterface == nil {
 		err = errors.New("Could not send ARP Request packet to " + ip + ": no interface with outbound source found")
 	}
 	if err != nil {
-		logx.Debugf("%s", err)
+		gologger.Debug().Msgf("%s\n", err)
 		return
 	}
 	// network layers
@@ -52,14 +52,14 @@ func arpRequestAsync(ip string) {
 
 	err = gopacket.SerializeLayers(buf, opts, &eth, &arp)
 	if err != nil {
-		logx.Warnf("%s", err)
+		gologger.Warning().Msgf("%s\n", err)
 		return
 	}
 	// send the packet out on every interface
 	for _, handler := range handlers.EthernetActive {
 		err := handler.WritePacketData(buf.Bytes())
 		if err != nil {
-			logx.Warnf("%s", err)
+			gologger.Warning().Msgf("%s\n", err)
 		}
 	}
 }

@@ -3,11 +3,10 @@ package scan
 import (
 	"errors"
 	"net"
-	"sync"
-	"time"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/routing"
+	"github.com/projectdiscovery/gologger"
 	"golang.org/x/net/icmp"
 )
 
@@ -22,47 +21,46 @@ var (
 	networkInterface                                        *net.Interface
 	transportPacketSend, icmpPacketSend, ethernetPacketSend chan *PkgSend
 	icmpConn4, icmpConn6                                    *icmp.PacketConn
-	mu                                                      sync.Mutex
 
-	pkgRouter routing.Router
+	PkgRouter routing.Router
 
 	ArpRequestAsync  func(ip string)
 	InitScanner      func(s *Scanner) error
-	NumberOfHandlers = 10
+	NumberOfHandlers = 1
 	tcpsequencer     = NewTCPSequencer()
 )
 
 type ListenHandler struct {
 	Busy                                   bool
 	Phase                                  *Phase
+	SourceHW                               net.HardwareAddr
+	SourceIp4                              net.IP
+	SourceIP6                              net.IP
 	Port                                   int
 	TcpConn4, UdpConn4, TcpConn6, UdpConn6 *net.IPConn
 	TcpChan, UdpChan, HostDiscoveryChan    chan *PkgResult
 }
 
-func Acquire() (*ListenHandler, error) {
-	// always grant to unprivileged scans
-	if !privileges.IsPrivileged {
-		return &ListenHandler{Phase: &Phase{}}, nil
-	}
-	maxRetries := 3
-	for i := 0; i < maxRetries; i++ {
-		mu.Lock()
-		for _, listenHandler := range ListenHandlers {
-			if !listenHandler.Busy {
-				listenHandler.Phase = &Phase{}
-				listenHandler.Busy = true
-				mu.Unlock()
-				return listenHandler, nil
-			}
-		}
-		mu.Unlock()
-		if i < maxRetries-1 {
-			time.Sleep(100 * time.Millisecond)
-		}
+func NewListenHandler() *ListenHandler {
+	return &ListenHandler{Phase: &Phase{}}
+}
+
+func Acquire(options *Options) (*ListenHandler, error) {
+	// always grant to unprivileged scans or connect scan
+	if PkgRouter == nil || !privileges.IsPrivileged || options.ScanType == "c" {
+		h := NewListenHandler()
+		h.Busy = true
+		return NewListenHandler(), nil
 	}
 
-	return nil, errors.New("no free ListenHandler:" + string(len(ListenHandlers)))
+	for _, listenHandler := range ListenHandlers {
+		if !listenHandler.Busy {
+			listenHandler.Phase = &Phase{}
+			listenHandler.Busy = true
+			return listenHandler, nil
+		}
+	}
+	return nil, errors.New("no free handlers")
 }
 
 func (l *ListenHandler) Release() {
@@ -72,9 +70,9 @@ func (l *ListenHandler) Release() {
 
 func init() {
 	if r, err := routing.New(); err != nil {
-		panic(err)
+		gologger.Error().Msgf("could not initialize router: %s\n", err)
 	} else {
-		pkgRouter = r
+		PkgRouter = r
 	}
 }
 

@@ -80,7 +80,7 @@ func (r *router) String() string {
 	for _, route := range r.v6 {
 		strs = append(strs, fmt.Sprintf("%+v", *route))
 	}
-	return strings.Join(strs, "")
+	return strings.Join(strs, "\n")
 }
 
 type ipAddrs struct {

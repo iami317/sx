@@ -2,10 +2,10 @@ package scan
 
 import (
 	"fmt"
-	"github.com/iami317/logx"
 	"net"
 
 	"github.com/iami317/sx/pkg/port"
+	"github.com/projectdiscovery/gologger"
 )
 
 // ConnectVerify is used to verify if ports are accurate using a connect request
@@ -16,7 +16,7 @@ func (s *Scanner) ConnectVerify(host string, ports []*port.Port) []*port.Port {
 		if err != nil {
 			continue
 		}
-		logx.Debugf("Validated active port %d on %s", p.Port, host)
+		gologger.Debug().Msgf("Validated active port %d on %s\n", p.Port, host)
 		conn.Close()
 		verifiedPorts = append(verifiedPorts, p)
 	}

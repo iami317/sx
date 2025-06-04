@@ -4,23 +4,23 @@ package scan
 
 import (
 	"errors"
-	"github.com/iami317/logx"
 	"net"
 	"os"
 	"time"
 
+	"github.com/projectdiscovery/gologger"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv6"
 )
 
 // PingNdpRequestAsync asynchronous to the target ip address
 func PingNdpRequestAsync(ip string) {
-	networkInterface, _, _, err := pkgRouter.Route(net.ParseIP(ip))
+	networkInterface, _, _, err := PkgRouter.Route(net.ParseIP(ip))
 	if networkInterface == nil {
 		err = errors.New("Could not send PingNdp Request packet to " + ip + ": no interface with outbound source found")
 	}
 	if err != nil {
-		logx.Debugf("%s", err)
+		gologger.Debug().Msgf("%s\n", err)
 		return
 	}
 	destAddr := &net.UDPAddr{IP: net.ParseIP(ip), Zone: networkInterface.Name}

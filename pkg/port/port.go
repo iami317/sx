@@ -13,5 +13,5 @@ type Port struct {
 }
 
 func (p *Port) String() string {
-	return fmt.Sprintf("port:%d-protocol:%d-tls:%v", p.Port, p.Protocol, p.TLS)
+	return fmt.Sprintf("%d-%d-%v", p.Port, p.Protocol, p.TLS)
 }

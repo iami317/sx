@@ -1,38 +1,108 @@
 package runner
 
 import (
+	"bufio"
 	"flag"
-	"github.com/iami317/logx"
+	"fmt"
+	"io"
 	"net"
+	"os"
 	"strings"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/scan"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/mapcidr/asn"
 	iputil "github.com/projectdiscovery/utils/ip"
+	readerutil "github.com/projectdiscovery/utils/reader"
+	"github.com/remeh/sizedwaitgroup"
 )
 
 func (r *Runner) Load() error {
 	r.scanner.ListenHandler.Phase.Set(scan.Init)
+
+	// merge all target sources into a file
+	targetfile, err := r.mergeToFile()
+	if err != nil {
+		return err
+	}
+	r.targetsFile = targetfile
+
+	// pre-process all targets (resolves all non fqdn targets to ip address)
+	err = r.PreProcessTargets()
+	if err != nil {
+		gologger.Warning().Msgf("%s\n", err)
+	}
+
+	return nil
+}
+
+func (r *Runner) mergeToFile() (string, error) {
+	// merge all targets in a unique file
+	tempInput, err := os.CreateTemp("", "stdin-input-*")
+	if err != nil {
+		return "", err
+	}
+	defer tempInput.Close()
+
+	// target defined via CLI argument
+	if len(r.options.Host) > 0 {
+		for _, v := range r.options.Host {
+			fmt.Fprintf(tempInput, "%s\n", v)
+		}
+	}
+
+	// Targets from file
+	if r.options.HostsFile != "" {
+		f, err := os.Open(r.options.HostsFile)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+		if _, err := io.Copy(tempInput, f); err != nil {
+			return "", err
+		}
+	}
+
+	// targets from STDIN
+	if r.options.Stdin {
+		timeoutReader := readerutil.TimeoutReader{Reader: os.Stdin, Timeout: r.options.InputReadTimeout}
+		if _, err := io.Copy(tempInput, timeoutReader); err != nil {
+			return "", err
+		}
+	}
+
+	// all additional non-named cli arguments are interpreted as targets
+	for _, target := range flag.Args() {
+		fmt.Fprintf(tempInput, "%s\n", target)
+	}
+
+	filename := tempInput.Name()
+	return filename, nil
+}
+
+func (r *Runner) PreProcessTargets() error {
 	if r.options.Stream {
 		defer close(r.streamChannel)
 	}
-	// 通过 CLI 参数定义的目标
-	if len(r.options.Host) > 0 {
-		for _, v := range r.options.Host {
-			if err := r.AddTarget(v); err != nil {
-				logx.Warnf("%s", err)
+	wg := sizedwaitgroup.New(r.options.Threads)
+	f, err := os.Open(r.targetsFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		wg.Add()
+		func(target string) {
+			defer wg.Done()
+			if err := r.AddTarget(target); err != nil {
+				gologger.Warning().Msgf("%s\n", err)
 			}
-		}
+		}(s.Text())
 	}
 
-	// 所有其他未命名的 CLI 参数都将被解释为目标
-	for _, target := range flag.Args() {
-		if err := r.AddTarget(target); err != nil {
-			logx.Warnf("%s", err)
-		}
-	}
-
+	wg.Wait()
 	return nil
 }
 
@@ -51,7 +121,7 @@ func (r *Runner) AddTarget(target string) error {
 			if r.options.Stream {
 				r.streamChannel <- Target{Cidr: cidr.String()}
 			} else if err := r.scanner.IPRanger.AddHostWithMetadata(cidr.String(), "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
-				logx.Warnf("%s", err)
+				gologger.Warning().Msgf("%s\n", err)
 			}
 		}
 		return nil
@@ -60,7 +130,7 @@ func (r *Runner) AddTarget(target string) error {
 		if r.options.Stream {
 			r.streamChannel <- Target{Cidr: target}
 		} else if err := r.scanner.IPRanger.AddHostWithMetadata(target, "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
-			logx.Warnf("%s", err)
+			gologger.Warning().Msgf("%s\n", err)
 		}
 		return nil
 	}
@@ -77,14 +147,14 @@ func (r *Runner) AddTarget(target string) error {
 			if r.options.ReversePTR {
 				names, err := iputil.ToFQDN(target)
 				if err != nil {
-					logx.Debugf("reverse ptr failed for %s: %s", target, err)
+					gologger.Debug().Msgf("reverse ptr failed for %s: %s\n", target, err)
 				} else {
 					metadata = strings.Trim(names[0], ".")
 				}
 			}
 			err := r.scanner.IPRanger.AddHostWithMetadata(target, metadata)
 			if err != nil {
-				logx.Warnf("%s", err)
+				gologger.Warning().Msgf("%s\n", err)
 			}
 		}
 		return nil
@@ -108,27 +178,27 @@ func (r *Runner) AddTarget(target string) error {
 				if len(r.options.Ports) > 0 {
 					r.streamChannel <- Target{Cidr: iputil.ToCidr(ip).String()}
 					if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, ""), target); err != nil {
-						logx.Warnf("%s", err)
+						gologger.Warning().Msgf("%s\n", err)
 					}
 				}
 			} else {
 				r.streamChannel <- Target{Cidr: iputil.ToCidr(ip).String()}
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, port), target); err != nil {
-					logx.Warnf("%s", err)
+					gologger.Warning().Msgf("%s\n", err)
 				}
 			}
 		} else if hasPort {
 			if len(r.options.Ports) > 0 {
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, ""), target); err != nil {
-					logx.Warnf("%s", err)
+					gologger.Warning().Msgf("%s\n", err)
 				}
 			} else {
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, port), target); err != nil {
-					logx.Warnf("%s", err)
+					gologger.Warning().Msgf("%s\n", err)
 				}
 			}
 		} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
-			logx.Warnf("%s", err)
+			gologger.Warning().Msgf("%s\n", err)
 		}
 	}
 
@@ -156,7 +226,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	)
 	for _, ip := range ipsV4 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			logx.Warnf("Skipping host %s as ip %s was excluded", target, ip)
+			gologger.Warning().Msgf("Skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -164,7 +234,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	}
 	for _, ip := range ipsV6 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			logx.Warnf("Skipping host %s as ip %s was excluded", target, ip)
+			gologger.Warning().Msgf("Skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -173,29 +243,30 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	if len(initialHosts) == 0 && len(initialHostsV6) == 0 {
 		return []string{}, nil
 	}
+
 	// If the user has specified ping probes, perform ping on addresses
 	if privileges.IsPrivileged && r.options.Ping && len(initialHosts) > 1 {
 		// Scan the hosts found for ping probes
 		pingResults, err := scan.PingHosts(initialHosts)
 		if err != nil {
-			logx.Warnf("Could not perform ping scan on %s: %s", target, err)
+			gologger.Warning().Msgf("Could not perform ping scan on %s: %s\n", target, err)
 			return []string{}, err
 		}
 		for _, result := range pingResults.Hosts {
 			if result.Type == scan.HostActive {
-				logx.Debugf("Ping probe succeed for %s: latency=%s", result.Host, result.Latency)
+				gologger.Debug().Msgf("Ping probe succeed for %s: latency=%s\n", result.Host, result.Latency)
 			} else {
-				logx.Debugf("Ping probe failed for %s: error=%s", result.Host, result.Error)
+				gologger.Debug().Msgf("Ping probe failed for %s: error=%s\n", result.Host, result.Error)
 			}
 		}
 
 		// Get the fastest host in the list of hosts
 		fastestHost, err := pingResults.GetFastestHost()
 		if err != nil {
-			logx.Warnf("No active host found for %s: %s", target, err)
+			gologger.Warning().Msgf("No active host found for %s: %s\n", target, err)
 			return []string{}, err
 		}
-		logx.Infof("Fastest host found for target: %s (%s)", fastestHost.Host, fastestHost.Latency)
+		gologger.Info().Msgf("Fastest host found for target: %s (%s)\n", fastestHost.Host, fastestHost.Latency)
 		hostIPS = append(hostIPS, fastestHost.Host)
 	} else if r.options.ScanAllIPS {
 		hostIPS = append(initialHosts, initialHostsV6...)
@@ -210,7 +281,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 
 	for _, hostIP := range hostIPS {
 		if r.scanner.IPRanger.Contains(hostIP) {
-			logx.Debugf("Using ip %s for host %s enumeration", hostIP, target)
+			gologger.Debug().Msgf("Using ip %s for host %s enumeration\n", hostIP, target)
 		}
 	}
 

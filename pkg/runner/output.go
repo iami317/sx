@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,7 +14,9 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/iami317/sx/pkg/port"
+	"github.com/iami317/sx/pkg/protocol"
 	"github.com/pkg/errors"
+	"github.com/projectdiscovery/gologger"
 )
 
 // Result contains the result for a host
@@ -95,7 +98,7 @@ func WriteHostOutput(host string, ports []*port.Port, outputCDN bool, cdnName st
 		if outputCDN && cdnName != "" {
 			sb.WriteString(" [" + cdnName + "]")
 		}
-		sb.WriteString("")
+		sb.WriteString("\n")
 		_, err := bufwriter.WriteString(sb.String())
 		if err != nil {
 			bufwriter.Flush()
@@ -128,4 +131,54 @@ func WriteJSONOutput(host, ip string, ports []*port.Port, outputCDN bool, isCdn 
 		}
 	}
 	return nil
+}
+
+// WriteCsvOutput writes the output list of subdomain in csv format to an io.Writer
+func WriteCsvOutput(host, ip string, ports []*port.Port, outputCDN bool, isCdn bool, cdnName string, header bool, writer io.Writer) error {
+	encoder := csv.NewWriter(writer)
+	data := &Result{IP: ip, TimeStamp: time.Now().UTC(), Port: 0, Protocol: protocol.TCP.String(), TLS: false}
+	if host != ip {
+		data.Host = host
+	}
+	if outputCDN {
+		data.IsCDNIP = isCdn
+		data.CDNName = cdnName
+	}
+	if header {
+		writeCSVHeaders(data, encoder)
+	}
+
+	for _, p := range ports {
+		data.Port = p.Port
+		data.Protocol = p.Protocol.String()
+		data.TLS = p.TLS
+		writeCSVRow(data, encoder)
+	}
+	encoder.Flush()
+	return nil
+}
+
+func writeCSVHeaders(data *Result, writer *csv.Writer) {
+	headers, err := data.CSVHeaders()
+	if err != nil {
+		gologger.Error().Msg(err.Error())
+		return
+	}
+
+	if err := writer.Write(headers); err != nil {
+		errMsg := errors.Wrap(err, "Could not write headers")
+		gologger.Error().Msg(errMsg.Error())
+	}
+}
+
+func writeCSVRow(data *Result, writer *csv.Writer) {
+	rowData, err := data.CSVFields()
+	if err != nil {
+		gologger.Error().Msg(err.Error())
+		return
+	}
+	if err := writer.Write(rowData); err != nil {
+		errMsg := errors.Wrap(err, "Could not write row")
+		gologger.Error().Msg(errMsg.Error())
+	}
 }

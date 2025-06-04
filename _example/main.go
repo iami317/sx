@@ -7,7 +7,6 @@ import (
 	"github.com/iami317/sx/pkg/result"
 	"github.com/iami317/sx/pkg/runner"
 	"github.com/iami317/sx/pkg/scan"
-	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"os"
 	"os/signal"
 	"strings"
@@ -218,10 +217,10 @@ func main() {
 	}
 	options.OnResult = onResult
 	options.OnReceive = onReceive
-	options.OnProgress = func(c, f uint64) {
-		PrintProgress(c, f)
-	}
-	options.Rate = 1000000
+	//options.OnProgress = func(c, f uint64) {
+	//	PrintProgress(c, f)
+	//}
+	options.Rate = 10000
 	naabuRunner, err := runner.NewRunner(options)
 	if err != nil {
 		logx.Errorf("Could not create runner: %s", err)

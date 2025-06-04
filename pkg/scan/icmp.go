@@ -5,11 +5,11 @@ package scan
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/iami317/logx"
 	"net"
 	"os"
 	"time"
 
+	"github.com/projectdiscovery/gologger"
 	iputil "github.com/projectdiscovery/utils/ip"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
@@ -95,12 +95,12 @@ func PingIcmpEchoRequestAsync(ip string) {
 	case iputil.IsIPv6(ip):
 		m.Type = ipv6.ICMPTypeEchoRequest
 		packetListener = icmpConn6
-		networkInterface, _, _, err := pkgRouter.Route(destinationIP)
+		networkInterface, _, _, err := PkgRouter.Route(destinationIP)
 		if networkInterface == nil {
 			err = fmt.Errorf("could not send ICMP Echo Request packet to %s: no interface with outbout source ipv6 found", destinationIP)
 		}
 		if err != nil {
-			logx.Debugf("%s", err)
+			gologger.Debug().Msgf("%s\n", err)
 			return
 		}
 		destAddr = &net.UDPAddr{IP: destinationIP, Zone: networkInterface.Name}
@@ -175,6 +175,9 @@ func PingIcmpTimestampRequest(ip string, timeout time.Duration) bool {
 // PingIcmpTimestampRequestAsync synchronous to the target ip address - ipv4 only
 func PingIcmpTimestampRequestAsync(ip string) {
 	if !iputil.IsIPv4(ip) {
+		return
+	}
+	if icmpConn4 == nil {
 		return
 	}
 	destAddr := &net.IPAddr{IP: net.ParseIP(ip)}
@@ -262,6 +265,9 @@ func ParseTimestamp(_ int, b []byte) (icmp.MessageBody, error) {
 // PingIcmpAddressMaskRequestAsync asynchronous to the target ip address - ipv4 only
 func PingIcmpAddressMaskRequestAsync(ip string) {
 	if !iputil.IsIPv4(ip) {
+		return
+	}
+	if icmpConn4 == nil {
 		return
 	}
 	destAddr := &net.IPAddr{IP: net.ParseIP(ip)}

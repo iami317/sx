@@ -223,7 +223,7 @@ func main() {
 	options.Rate = 10000
 	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
-		logx.Errorf("Could not create runner: %s", err)
+		logx.Errorf("could not create runner: %s", err)
 		return
 	}
 	// Setup graceful exits

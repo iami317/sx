@@ -11,20 +11,13 @@ import (
 	updateutils "github.com/projectdiscovery/utils/update"
 )
 
-const banner = `
-                  __
-  ___  ___  ___ _/ /  __ __
- / _ \/ _ \/ _ \/ _ \/ // /
-/_//_/\_,_/\_,_/_.__/\_,_/
-`
+const banner = ``
 
 // Version is the current version of naabu
-const version = `2.3.4`
+const version = ``
 
 // showBanner is used to show the banner to the user
 func showBanner() {
-	gologger.Print().Msgf("%s\n", banner)
-	gologger.Print().Msgf("\t\tprojectdiscovery.io\n\n")
 }
 
 // showNetworkCapabilities shows the network capabilities/scan types possible with the running user

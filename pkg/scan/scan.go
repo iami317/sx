@@ -92,6 +92,7 @@ type Scanner struct {
 	stream               bool
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
+	SendCache            map[string]struct{}
 }
 
 // PkgSend is a TCP package
@@ -273,10 +274,13 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 
 			if s.OnReceive != nil {
 				singlePort := []*port.Port{ip.port}
-				if ip.ipv4 != "" {
+				_, okIpv4 := s.SendCache[ip.ipv4]
+				if ip.ipv4 != "" && okIpv4 {
 					s.OnReceive(&result.HostResult{IP: ip.ipv4, Ports: singlePort})
 				}
-				if ip.ipv6 != "" {
+
+				_, okIpv6 := s.SendCache[ip.ipv6]
+				if ip.ipv6 != "" && okIpv6 {
 					s.OnReceive(&result.HostResult{IP: ip.ipv6, Ports: singlePort})
 				}
 			}

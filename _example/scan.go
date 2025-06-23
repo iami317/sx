@@ -32,7 +32,7 @@ func main() {
 		Silent:     true,
 		WarmUpTime: 2,
 		Verify:     true,
-		Ports:      "80,443",
+		Ports:      "22,443",
 	}
 
 	naabuRunner, err := runner.NewRunner(&options)

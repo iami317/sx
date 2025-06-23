@@ -30,12 +30,12 @@ func icmpTest() {
 		WarmUpTime:        10,
 		Debug:             true,
 		Verbose:           false,
-		//OnProgress: func(c, e uint64) {
-		//	if c > 0 {
-		//		progress, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", float64(e)/float64(c)), 64)
-		//		runtime.RunTimeApp.IpProgress(info.TaskHistoryId, progress)
-		//	}
-		//},
+		OnProgress: func(c, e uint64) {
+			//if c > 0 {
+			//progress, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", float64(e)/float64(c)), 64)
+			//runtime.RunTimeApp.IpProgress(info.TaskHistoryId, progress)
+			//}
+		},
 	}
 	options.ScanType = runner.SynScan
 	options.Ping = true

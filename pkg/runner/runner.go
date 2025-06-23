@@ -127,6 +127,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		ProxyAuth:     options.ProxyAuth,
 		Stream:        options.Stream,
 		OnReceive:     options.OnReceive,
+		OnProgress:    options.OnProgress,
 		ScanType:      options.ScanType,
 	}
 
@@ -569,6 +570,9 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				} else {
 					r.wgscan.Add()
 					go r.handleHostPort(ctx, ip, port)
+					if r.scanner.OnProgress != nil {
+						r.scanner.OnProgress(uint64(index), Range)
+					}
 				}
 				if r.options.EnableProgressBar {
 					r.stats.IncrementCounter("packets", 1)

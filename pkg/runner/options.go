@@ -64,6 +64,7 @@ type Options struct {
 	baseResolvers     []string
 	OnResult          result.ResultFn // callback on final host result
 	OnReceive         result.ResultFn // callback on response receive
+	OnProgress        result.ProgressFn
 	CSV               bool
 	Resume            bool
 	ResumeCfg         *ResumeCfg

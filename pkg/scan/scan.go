@@ -92,6 +92,7 @@ type Scanner struct {
 	stream               bool
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
+	OnProgress           result.ProgressFn
 	SendCache            map[string]struct{}
 }
 

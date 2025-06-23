@@ -9,6 +9,7 @@ import (
 )
 
 type ResultFn func(*HostResult)
+type ProgressFn func(c, e uint64)
 
 type HostResult struct {
 	Host       string

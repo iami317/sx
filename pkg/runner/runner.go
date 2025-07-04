@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/cornelk/hashmap"
 	"math/big"
 	"net"
 	"net/http"
@@ -154,7 +155,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		}
 	}
 
-	runner.scanner.SendCache = make(map[string]struct{})
+	runner.scanner.SendCache = hashmap.New[string, struct{}]()
 	return runner, nil
 }
 
@@ -325,7 +326,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			for ip := range ipStream {
 				// only run host discovery if the ip is not present in the excludedIPsMap
 				if _, exists := excludedIPsMap[ip]; !exists {
-					r.scanner.SendCache[ip] = struct{}{}
+					r.scanner.SendCache.Set(ip, struct{}{})
 					r.handleHostDiscovery(ip)
 				}
 			}
@@ -365,7 +366,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				return false
 			}
 
-			r.scanner.SendCache[target] = struct{}{}
+			r.scanner.SendCache.Set(target, struct{}{})
 			if shouldUseRawPackets {
 				r.RawSocketEnumeration(ctx, target, port)
 			} else {
@@ -452,7 +453,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 						if r.options.Verify {
 							continue
 						}
-						_, okIp := r.scanner.SendCache[ip]
+						_, okIp := r.scanner.SendCache.Get(ip)
 						if r.scanner.OnReceive != nil && okIp {
 							r.scanner.OnReceive(&result.HostResult{IP: ip, Ports: []*port.Port{p}})
 						}
@@ -564,7 +565,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				}
 
 				// connect scan
-				r.scanner.SendCache[ip] = struct{}{}
+				r.scanner.SendCache.Set(ip, struct{}{})
 				if shouldUseRawPackets {
 					r.RawSocketEnumeration(ctx, ip, port)
 				} else {
@@ -599,7 +600,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				}
 
 				// connect scan
-				r.scanner.SendCache[ip] = struct{}{}
+				r.scanner.SendCache.Set(ip, struct{}{})
 				if shouldUseRawPackets {
 					r.RawSocketEnumeration(ctx, ip, &portWithMetadata)
 				} else {
@@ -851,7 +852,7 @@ func (r *Runner) handleHostPort(ctx context.Context, host string, p *port.Port) 
 			if r.options.Verify {
 				return
 			}
-			_, okHost := r.scanner.SendCache[host]
+			_, okHost := r.scanner.SendCache.Get(host)
 			if r.scanner.OnReceive != nil && okHost {
 				r.scanner.OnReceive(&result.HostResult{IP: host, Ports: []*port.Port{p}})
 			}
@@ -948,8 +949,8 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 
 	if r.options.Verify {
 		for hostResult := range scanResults.GetIPsPorts() {
-			_, okIp := r.scanner.SendCache[hostResult.IP]
-			_, okHost := r.scanner.SendCache[hostResult.Host]
+			_, okIp := r.scanner.SendCache.Get(hostResult.IP)
+			_, okHost := r.scanner.SendCache.Get(hostResult.Host)
 			if okIp || okHost {
 				r.scanner.OnReceive(hostResult)
 			}
@@ -1030,8 +1031,8 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 				}
 
 				if r.options.OnResult != nil {
-					_, okIp := r.scanner.SendCache[hostResult.IP]
-					_, okHost := r.scanner.SendCache[host]
+					_, okIp := r.scanner.SendCache.Get(hostResult.IP)
+					_, okHost := r.scanner.SendCache.Get(host)
 					if okIp || okHost {
 						r.options.OnResult(&result.HostResult{Host: host, IP: hostResult.IP, Ports: hostResult.Ports})
 					}
@@ -1096,8 +1097,8 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 				}
 
 				if r.options.OnResult != nil {
-					_, okIp := r.scanner.SendCache[hostIP]
-					_, okHost := r.scanner.SendCache[host]
+					_, okIp := r.scanner.SendCache.Get(hostIP)
+					_, okHost := r.scanner.SendCache.Get(host)
 					if okIp || okHost {
 						r.options.OnResult(&result.HostResult{Host: host, IP: hostIP})
 					}

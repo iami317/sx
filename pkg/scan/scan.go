@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cornelk/hashmap"
 	"github.com/iami317/sx/pkg/port"
 	"github.com/iami317/sx/pkg/protocol"
 	"github.com/iami317/sx/pkg/result"
@@ -93,7 +94,7 @@ type Scanner struct {
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
 	OnProgress           result.ProgressFn
-	SendCache            map[string]struct{}
+	SendCache            *hashmap.Map[string, struct{}]
 }
 
 // PkgSend is a TCP package
@@ -275,12 +276,12 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 
 			if s.OnReceive != nil {
 				singlePort := []*port.Port{ip.port}
-				_, okIpv4 := s.SendCache[ip.ipv4]
+				_, okIpv4 := s.SendCache.Get(ip.ipv4)
 				if ip.ipv4 != "" && okIpv4 {
 					s.OnReceive(&result.HostResult{IP: ip.ipv4, Ports: singlePort})
 				}
 
-				_, okIpv6 := s.SendCache[ip.ipv6]
+				_, okIpv6 := s.SendCache.Get(ip.ipv6)
 				if ip.ipv6 != "" && okIpv6 {
 					s.OnReceive(&result.HostResult{IP: ip.ipv6, Ports: singlePort})
 				}

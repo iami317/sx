@@ -19,19 +19,20 @@ var probes = goflags.StringSlice{"7", "9", "13", "21", "22", "23", "25", "26", "
 func main() {
 	t := time.Now()
 	num := 0
-	target := goflags.StringSlice{"192.168.101.92"}
+	target := goflags.StringSlice{"192.168.101.0/24"}
 	ctx := context.Background()
 	options := runner.Options{
 		Host: target,
 		OnResult: func(hr *result.HostResult) {
-			log.Println("OnResult------", hr.IP)
+			log.Println("OnResult------", hr.IP, hr.Ports[0])
 		},
 		OnReceive: func(hostResult *result.HostResult) {
-			log.Println("OnReceive------", hostResult.IP)
+			log.Println("OnReceive------", hostResult.IP, hostResult.Ports[0])
 		},
-		OnlyHostDiscovery: true,
-		ScanType:          runner.SynScan,
-		Ping:              true,
+		TopPorts: "full",
+		//OnlyHostDiscovery: true,
+		ScanType: runner.SynScan,
+		//Ping:              true,
 		//IcmpEchoRequestProbe:        true,
 		//IcmpTimestampRequestProbe:   true,
 		//IcmpAddressMaskRequestProbe: true,
@@ -39,10 +40,10 @@ func main() {
 		//IPv6NeighborDiscoveryPing: true,
 		TcpSynPingProbes: probes,
 		TcpAckPingProbes: probes,
-		Threads:          25,
-		Rate:             200,
+		Threads:          2000,
+		Rate:             10000,
 		Timeout:          runner.DefaultPortTimeoutSynScan,
-		Retries:          3,
+		Retries:          0,
 		Silent:           true,
 		WarmUpTime:       2,
 		Verify:           true,

@@ -191,9 +191,13 @@ func (options *Options) configureHostDiscovery(ports []*port.Port) {
 		// - TCP ACK on port 443
 		options.IcmpEchoRequestProbe = true
 		options.IcmpTimestampRequestProbe = true
-		options.TcpSynPingProbes = append(options.TcpSynPingProbes, "80")
-		options.TcpSynPingProbes = append(options.TcpSynPingProbes, "443")
-		options.TcpAckPingProbes = append(options.TcpAckPingProbes, "80")
-		options.TcpAckPingProbes = append(options.TcpAckPingProbes, "443")
+		options.TcpSynPingProbes = Probes
+		options.TcpAckPingProbes = Probes
+		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "22")
+		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "80")
+		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "443")
+		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "22")
+		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "80")
+		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "443")
 	}
 }

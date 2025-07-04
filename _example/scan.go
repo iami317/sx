@@ -14,7 +14,7 @@ import (
 func main() {
 	t := time.Now()
 	num := 0
-	target := goflags.StringSlice{"192.168.101.92"}
+	target := goflags.StringSlice{"192.168.101.60"}
 	ctx := context.Background()
 	options := runner.Options{
 		Host: target,
@@ -24,15 +24,16 @@ func main() {
 		OnReceive: func(hostResult *result.HostResult) {
 			log.Println("OnReceive------", hostResult.IP, hostResult.Ports)
 		},
-		ScanType:   runner.SynScan,
-		Threads:    25,
-		Rate:       200,
-		Timeout:    runner.DefaultPortTimeoutSynScan,
-		Retries:    3,
-		Silent:     true,
-		WarmUpTime: 2,
-		Verify:     true,
-		Ports:      "22,443",
+		WithHostDiscovery: true,
+		ScanType:          runner.SynScan,
+		Threads:           2500,
+		Rate:              25000,
+		Timeout:           time.Duration(300) * time.Millisecond,
+		Retries:           0,
+		Silent:            true,
+		WarmUpTime:        200,
+		Verify:            false,
+		TopPorts:          "full",
 	}
 
 	naabuRunner, err := runner.NewRunner(&options)

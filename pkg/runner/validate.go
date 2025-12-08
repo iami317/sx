@@ -6,10 +6,12 @@ import (
 	"net"
 	"strings"
 
+	"errors"
+
 	"github.com/iami317/sx/pkg/port"
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/scan"
-	"github.com/pkg/errors"
+	"github.com/projectdiscovery/utils/errkit"
 	fileutil "github.com/projectdiscovery/utils/file"
 	iputil "github.com/projectdiscovery/utils/ip"
 	osutil "github.com/projectdiscovery/utils/os"
@@ -49,14 +51,8 @@ func (options *Options) ValidateOptions() error {
 		return errTwoOutputMode
 	}
 
-	if options.Timeout == 0 {
-		return errors.Wrap(errZeroValue, "timeout")
-	} else if !privileges.IsPrivileged && options.Timeout == DefaultPortTimeoutSynScan {
-		options.Timeout = DefaultPortTimeoutConnectScan
-	}
-
 	if options.Rate == 0 {
-		return errors.Wrap(errZeroValue, "rate")
+		return errkit.Wrap(errZeroValue, "rate")
 	} else if !privileges.IsPrivileged && options.Rate == DefaultRateSynScan {
 		options.Rate = DefaultRateConnectScan
 	}
@@ -145,6 +141,10 @@ func (options *Options) ValidateOptions() error {
 		options.ScanType = ConnectScan
 	}
 
+	if options.ConnectPayload != "" && options.ScanType != ConnectScan {
+		return errors.New("connect payload can only be used with connect scan")
+	}
+
 	if options.ScanType == SynScan && scan.PkgRouter == nil {
 		gologger.Warning().Msgf("Routing could not be determined (are you using a VPN?).falling back to connect scan")
 		options.ScanType = ConnectScan
@@ -152,6 +152,11 @@ func (options *Options) ValidateOptions() error {
 
 	if options.ServiceDiscovery || options.ServiceVersion {
 		return errors.New("service discovery feature is not implemented")
+	}
+
+	if options.WarmUpTime <= 0 {
+		gologger.Debug().Msgf("Warm up time must be greater than 0, setting to 2")
+		options.WarmUpTime = 2
 	}
 
 	return nil
@@ -191,13 +196,9 @@ func (options *Options) configureHostDiscovery(ports []*port.Port) {
 		// - TCP ACK on port 443
 		options.IcmpEchoRequestProbe = true
 		options.IcmpTimestampRequestProbe = true
-		options.TcpSynPingProbes = Probes
-		options.TcpAckPingProbes = Probes
-		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "22")
-		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "80")
-		//options.TcpSynPingProbes = append(options.TcpSynPingProbes, "443")
-		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "22")
-		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "80")
-		//options.TcpAckPingProbes = append(options.TcpAckPingProbes, "443")
+		options.TcpSynPingProbes = append(options.TcpSynPingProbes, "80")
+		options.TcpSynPingProbes = append(options.TcpSynPingProbes, "443")
+		options.TcpAckPingProbes = append(options.TcpAckPingProbes, "80")
+		options.TcpAckPingProbes = append(options.TcpAckPingProbes, "443")
 	}
 }

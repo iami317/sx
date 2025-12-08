@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cornelk/hashmap"
 	"github.com/iami317/sx/pkg/port"
 	"github.com/iami317/sx/pkg/protocol"
 	"github.com/iami317/sx/pkg/result"
@@ -20,6 +19,8 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/networkpolicy"
+	envutil "github.com/projectdiscovery/utils/env"
+	netutil "github.com/projectdiscovery/utils/net"
 	"golang.org/x/net/proxy"
 )
 
@@ -93,8 +94,6 @@ type Scanner struct {
 	stream               bool
 	ListenHandler        *ListenHandler
 	OnReceive            result.ResultFn
-	OnProgress           result.ProgressFn
-	SendCache            *hashmap.Map[string, struct{}]
 }
 
 // PkgSend is a TCP package
@@ -114,8 +113,9 @@ type PkgResult struct {
 }
 
 var (
-	pingIcmpEchoRequestCallback      func(ip string, timeout time.Duration) bool //nolint
-	pingIcmpTimestampRequestCallback func(ip string, timeout time.Duration) bool //nolint
+	pingIcmpEchoRequestCallback      func(ip string, timeout time.Duration) bool              //nolint
+	pingIcmpTimestampRequestCallback func(ip string, timeout time.Duration) bool              //nolint
+	EnableTLSDetection               = envutil.GetEnvOrDefault("ENABLE_TLS_DETECTION", false) // Enable TLS detection for connect scans
 )
 
 // NewScanner creates a new full port scanner that scans all ports using SYN packets.
@@ -125,9 +125,15 @@ func NewScanner(options *Options) (*Scanner, error) {
 		return nil, err
 	}
 
-	var nPolicyOptions networkpolicy.Options
+	var nPolicyOptions *networkpolicy.Options
+	if options.NetworkPolicyOptions != nil {
+		nPolicyOptions = options.NetworkPolicyOptions
+	} else {
+		nPolicyOptions = &networkpolicy.Options{}
+	}
+
 	nPolicyOptions.DenyList = append(nPolicyOptions.DenyList, options.ExcludedIps...)
-	nPolicy, err := networkpolicy.New(nPolicyOptions)
+	nPolicy, err := networkpolicy.New(*nPolicyOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -187,9 +193,11 @@ acquire:
 }
 
 // Close the scanner and terminate all workers
-func (s *Scanner) Close() {
+func (s *Scanner) Close() error {
 	s.ListenHandler.Busy = false
 	s.ListenHandler = nil
+
+	return nil
 }
 
 // StartWorkers of the scanner
@@ -272,17 +280,15 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
 				gologger.Debug().Msgf("Discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				continue
 			}
 
 			if s.OnReceive != nil {
 				singlePort := []*port.Port{ip.port}
-				_, okIpv4 := s.SendCache.Get(ip.ipv4)
-				if ip.ipv4 != "" && okIpv4 {
+				if ip.ipv4 != "" {
 					s.OnReceive(&result.HostResult{IP: ip.ipv4, Ports: singlePort})
 				}
-
-				_, okIpv6 := s.SendCache.Get(ip.ipv6)
-				if ip.ipv6 != "" && okIpv6 {
+				if ip.ipv6 != "" {
 					s.OnReceive(&result.HostResult{IP: ip.ipv6, Ports: singlePort})
 				}
 			}
@@ -314,6 +320,14 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case ip := <-s.ListenHandler.UdpChan:
+			srcIP4WithPort := net.JoinHostPort(ip.ipv4, ip.port.String())
+			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
+			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
+			if !isIPInRange {
+				gologger.Debug().Msgf("Discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				continue
+			}
+
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
 				gologger.Debug().Msgf("Received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
@@ -375,7 +389,7 @@ func GetInterfaceFromIP(ip net.IP) (*net.Interface, error) {
 }
 
 // ConnectPort a single host and port
-func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) (bool, error) {
+func (s *Scanner) ConnectPort(host, payload string, p *port.Port, timeout time.Duration) (bool, error) {
 	hostport := net.JoinHostPort(host, fmt.Sprint(p.Port))
 	var (
 		err  error
@@ -406,7 +420,9 @@ func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) 
 	if err != nil {
 		return false, err
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// udp needs data probe
 	switch p.Protocol {
@@ -414,7 +430,7 @@ func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) 
 		if err := conn.SetWriteDeadline(time.Now().Add(timeout)); err != nil {
 			return false, err
 		}
-		if _, err := conn.Write(nil); err != nil {
+		if _, err := conn.Write([]byte(payload)); err != nil {
 			return false, err
 		}
 		if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
@@ -426,6 +442,12 @@ func (s *Scanner) ConnectPort(host string, p *port.Port, timeout time.Duration) 
 			return false, err
 		}
 		return n > 0, nil
+	case protocol.TCP:
+		// Perform TLS detection for TCP connections if enabled
+		if EnableTLSDetection {
+			//nolint
+			p.TLS = netutil.DetectTLS(conn, host, timeout)
+		}
 	}
 
 	return true, err

@@ -20,7 +20,7 @@ func DefaultResumeFolderPath() string {
 	if err != nil {
 		return defaultResumeFileName
 	}
-	return filepath.Join(home, ".config", "sx")
+	return filepath.Join(home, ".config", "naabu")
 }
 
 // DefaultResumeFilePath returns the default resume file full path
@@ -83,6 +83,6 @@ func (resumeCfg *ResumeCfg) ShouldSaveResume() bool {
 // CleanupResumeConfig cleaning up the config file
 func (resumeCfg *ResumeCfg) CleanupResumeConfig() {
 	if fileutil.FileExists(DefaultResumeFilePath()) {
-		os.Remove(DefaultResumeFilePath())
+		_ = os.Remove(DefaultResumeFilePath())
 	}
 }

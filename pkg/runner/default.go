@@ -3,8 +3,8 @@ package runner
 import "time"
 
 const (
-	DefaultPortTimeoutSynScan     = time.Duration(500) * time.Millisecond
-	DefaultPortTimeoutConnectScan = time.Duration(5) * time.Second
+	DefaultPortTimeoutSynScan     = time.Second
+	DefaultPortTimeoutConnectScan = time.Duration(3 * time.Second)
 
 	DefaultRateSynScan     = 1000
 	DefaultRateConnectScan = 1500

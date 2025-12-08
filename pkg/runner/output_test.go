@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iami317/sx/pkg/port"
-	"github.com/iami317/sx/pkg/protocol"
+	"github.com/projectdiscovery/naabu/v2/pkg/port"
+	"github.com/projectdiscovery/naabu/v2/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,6 +32,6 @@ func TestWriteJSONOutput(t *testing.T) {
 	}
 	var s string
 	buf := bytes.NewBufferString(s)
-	assert.Nil(t, WriteJSONOutput(host, ip, ports, true, false, "", buf))
+	assert.Nil(t, WriteJSONOutput(host, ip, ports, true, false, "", nil, buf))
 	assert.Equal(t, 3, len(strings.Split(buf.String(), "\n")))
 }

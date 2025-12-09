@@ -466,11 +466,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			r.ConnectVerification()
 		}
 
-		// handle nmap first to integrate service information
-		if err := r.handleNmap(); err != nil {
-			return err
-		}
-
 		// then handle output with enhanced service information
 		r.handleOutput(r.scanner.ScanResults)
 		return nil
@@ -640,11 +635,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			r.ConnectVerification()
 		}
 
-		// handle nmap first to integrate service information
-		if err := r.handleNmap(); err != nil {
-			return err
-		}
-
 		// then handle output with enhanced service information
 		r.handleOutput(r.scanner.ScanResults)
 		return nil
@@ -706,11 +696,6 @@ func (r *Runner) GetTargetIps(ipsCallback func() ([]*net.IPNet, []string)) (targ
 }
 
 func (r *Runner) ShowScanResultOnExit() {
-	// handle nmap first to integrate service information
-	if err := r.handleNmap(); err != nil {
-		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
-	}
-
 	// then handle output with enhanced service information
 	r.handleOutput(r.scanner.ScanResults)
 }

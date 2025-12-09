@@ -96,10 +96,6 @@ type Options struct {
 	// HostDiscoveryIgnoreRST      bool - planned
 	InputReadTimeout time.Duration
 	DisableStdin     bool
-	// ServiceDiscovery enables service discovery on found open ports (matches port number with service)
-	ServiceDiscovery bool
-	// ServiceVersion attempts to discover service running on open ports with active/passive probes
-	ServiceVersion bool
 	// ReversePTR lookup for ips
 	ReversePTR bool
 	//DisableUpdateCheck disables automatic update check
@@ -119,7 +115,7 @@ func ParseOptions() *Options {
 	var cfgFile string
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`Naabu is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
+	flagSet.SetDescription(`sx is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
 
 	flagSet.CreateGroup("input", "Input",
 		flagSet.StringSliceVarP(&options.Host, "host", "", nil, "hosts to scan ports for (comma-separated)", goflags.NormalizedStringSliceOptions),
@@ -160,8 +156,6 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.ConnectPayload, "cp", "connect-payload", "", "payload to send in CONNECT scans (optional)"),
 		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "list available interfaces and public ip"),
 		flagSet.StringVarP(&options.Interface, "i", "interface", "", "network Interface to use for port scan"),
-		flagSet.BoolVar(&options.Nmap, "nmap", false, "invoke nmap scan on targets (nmap must be installed) - Deprecated"),
-		flagSet.StringVar(&options.NmapCLI, "nmap-cli", "", "nmap command to run on found results (example: -nmap-cli 'nmap -sV')"),
 		flagSet.StringVar(&options.Resolvers, "r", "", "list of custom resolver dns resolution (comma separated or from file)"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "socks5 proxy (ip[:port] / fqdn[:port]"),
 		flagSet.StringVar(&options.ProxyAuth, "proxy-auth", "", "socks5 proxy authentication (username:password)"),
@@ -190,11 +184,6 @@ func ParseOptions() *Options {
 		// flagSet.StringSliceVarP(&options.UdpPingProbes, "probe-udp", "pu", []string{}, "UDP Ping"),
 		// flagSet.StringSliceVarP(&options.STcpInitPingProbes, "probe-stcp-init", "py", []string{}, "SCTP INIT Ping"),
 		// flagSet.BoolVarP(&options.HostDiscoveryIgnoreRST, "discovery-ignore-rst", "irst", false, "Ignore RST packets during host discovery"),
-	)
-
-	flagSet.CreateGroup("services-discovery", "Services-Discovery",
-		flagSet.BoolVarP(&options.ServiceDiscovery, "service-discovery", "sD", false, "Service Discovery"),
-		flagSet.BoolVarP(&options.ServiceVersion, "service-version", "sV", false, "Service Version"),
 	)
 
 	flagSet.CreateGroup("optimization", "Optimization",

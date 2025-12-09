@@ -23,9 +23,6 @@ func showNetworkCapabilities(options *Options) {
 			accessLevel = "CAP_NET_RAW"
 		}
 		scanType = "SYN"
-	case options.Passive:
-		accessLevel = "non root"
-		scanType = "PASSIVE"
 	default:
 		accessLevel = "non root"
 		scanType = "CONNECT"
@@ -35,9 +32,6 @@ func showNetworkCapabilities(options *Options) {
 	case options.OnlyHostDiscovery:
 		scanType = "Host Discovery"
 		gologger.Info().Msgf("Running %s\n", scanType)
-	case options.Passive:
-		scanType = "PASSIVE"
-		gologger.Info().Msgf("Running %s scan\n", scanType)
 	default:
 		gologger.Info().Msgf("Running %s scan with %s privileges\n", scanType, accessLevel)
 	}

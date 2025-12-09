@@ -212,26 +212,6 @@ func WriteJSONOutputWithMac(host, ip, macAddress string, ports []*port.Port, out
 		result.Protocol = p.Protocol.String()
 		//nolint
 		result.TLS = p.TLS
-
-		// copy the service fields
-		if p.Service != nil {
-			result.DeviceType = p.Service.DeviceType
-			result.ExtraInfo = p.Service.ExtraInfo
-			result.HighVersion = p.Service.HighVersion
-			result.Hostname = p.Service.Hostname
-			result.LowVersion = p.Service.LowVersion
-			result.Method = p.Service.Method
-			result.Name = p.Service.Name
-			result.OSType = p.Service.OSType
-			result.Product = p.Service.Product
-			result.Proto = p.Service.Proto
-			result.RPCNum = p.Service.RPCNum
-			result.ServiceFP = p.Service.ServiceFP
-			result.Tunnel = p.Service.Tunnel
-			result.Version = p.Service.Version
-			result.Confidence = p.Service.Confidence
-		}
-
 		b, err := result.JSON(excludedFields)
 		if err != nil {
 			return err

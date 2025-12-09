@@ -15,7 +15,6 @@ import (
 
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	updateutils "github.com/projectdiscovery/utils/update"
 )
 
 // Options contains the configuration options for tuning
@@ -75,8 +74,6 @@ type Options struct {
 	CSV               bool
 	Resume            bool
 	ResumeCfg         *ResumeCfg
-	Stream            bool
-	Passive           bool
 	OutputCDN         bool // display cdn in use
 	HealthCheck       bool
 	OnlyHostDiscovery bool // Perform only host discovery
@@ -98,8 +95,6 @@ type Options struct {
 	DisableStdin     bool
 	// ReversePTR lookup for ips
 	ReversePTR bool
-	//DisableUpdateCheck disables automatic update check
-	DisableUpdateCheck bool
 	// MetricsPort with statistics
 	MetricsPort int
 
@@ -148,7 +143,7 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("config", "Configuration",
-		flagSet.StringVar(&cfgFile, "config", "", "path to the naabu configuration file (default $HOME/.config/naabu/config.yaml)"),
+		flagSet.StringVar(&cfgFile, "config", "", "path to the sx configuration file (default $HOME/.config/sx/config.yaml)"),
 		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "scan all the IP's associated with DNS record"),
 		flagSet.StringSliceVarP(&options.IPVersion, "iv", "ip-version", []string{scan.IPv4}, "ip version to scan of hostname (4,6) - (default 4)", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", ConnectScan, "type of port scan (SYN/CONNECT)"),
@@ -160,8 +155,6 @@ func ParseOptions() *Options {
 		flagSet.StringVar(&options.Proxy, "proxy", "", "socks5 proxy (ip[:port] / fqdn[:port]"),
 		flagSet.StringVar(&options.ProxyAuth, "proxy-auth", "", "socks5 proxy authentication (username:password)"),
 		flagSet.BoolVar(&options.Resume, "resume", false, "resume scan using resume.cfg"),
-		flagSet.BoolVar(&options.Stream, "stream", false, "stream mode (disables resume, nmap, verify, retries, shuffling, etc)"),
-		flagSet.BoolVar(&options.Passive, "passive", false, "display passive open ports using shodan internetdb api"),
 		flagSet.DurationVarP(&options.InputReadTimeout, "input-read-timeout", "irt", time.Duration(3*time.Minute), "timeout on input read"),
 		flagSet.BoolVar(&options.DisableStdin, "no-stdin", false, "Disable Stdin processing"),
 	)
@@ -200,10 +193,10 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "display verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "nc", "no-color", false, "disable colors in CLI output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
-		flagSet.BoolVar(&options.Version, "version", false, "display version of naabu"),
+		flagSet.BoolVar(&options.Version, "version", false, "display version of sx"),
 		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "display stats of the running scan (deprecated)"),
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update (deprecated)"),
-		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose naabu metrics on"),
+		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose sx metrics on"),
 	)
 
 	_ = flagSet.Parse()
@@ -250,15 +243,6 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
-	if !options.DisableUpdateCheck {
-		latestVersion, err := updateutils.GetToolVersionCallback("naabu", Version)()
-		if err != nil {
-			gologger.Verbose().Msgf("naabu version check failed: %v", err.Error())
-		} else {
-			gologger.Info().Msgf("Current naabu version %v %v", Version, updateutils.GetVersionDescription(Version, latestVersion))
-		}
-	}
-
 	// Show network configuration and exit if the user requested it
 	if options.InterfacesList {
 		err := showNetworkInterfaces()
@@ -284,7 +268,7 @@ func (options *Options) ShouldLoadResume() bool {
 }
 
 func (options *Options) shouldDiscoverHosts() bool {
-	return (options.OnlyHostDiscovery || options.WithHostDiscovery) && !options.Passive && scan.PkgRouter != nil
+	return (options.OnlyHostDiscovery || options.WithHostDiscovery) && scan.PkgRouter != nil
 }
 
 func (options *Options) hasProbes() bool {

@@ -90,9 +90,6 @@ func (r *Runner) mergeToFile() (string, error) {
 }
 
 func (r *Runner) PreProcessTargets() error {
-	if r.options.Stream {
-		defer close(r.streamChannel)
-	}
 	wg := sizedwaitgroup.New(r.options.Threads)
 	f, err := os.Open(r.targetsFile)
 	if err != nil {
@@ -130,18 +127,14 @@ func (r *Runner) AddTarget(target string) error {
 			return err
 		}
 		for _, cidr := range cidrs {
-			if r.options.Stream {
-				r.streamChannel <- Target{Cidr: cidr.String()}
-			} else if err := r.scanner.IPRanger.AddHostWithMetadata(cidr.String(), "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
+			if err := r.scanner.IPRanger.AddHostWithMetadata(cidr.String(), "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
 				gologger.Warning().Msgf("%s\n", err)
 			}
 		}
 		return nil
 	}
 	if iputil.IsCIDR(target) {
-		if r.options.Stream {
-			r.streamChannel <- Target{Cidr: target}
-		} else if err := r.scanner.IPRanger.AddHostWithMetadata(target, "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
+		if err := r.scanner.IPRanger.AddHostWithMetadata(target, "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
 			gologger.Warning().Msgf("%s\n", err)
 		}
 		return nil
@@ -152,22 +145,18 @@ func (r *Runner) AddTarget(target string) error {
 		if ip.To4() != nil {
 			target = ip.To4().String()
 		}
-		if r.options.Stream {
-			r.streamChannel <- Target{Cidr: iputil.ToCidr(target).String()}
-		} else {
-			metadata := "ip"
-			if r.options.ReversePTR {
-				names, err := iputil.ToFQDN(target)
-				if err != nil {
-					gologger.Debug().Msgf("reverse ptr failed for %s: %s\n", target, err)
-				} else {
-					metadata = strings.Trim(names[0], ".")
-				}
-			}
-			err := r.scanner.IPRanger.AddHostWithMetadata(target, metadata)
+		metadata := "ip"
+		if r.options.ReversePTR {
+			names, err := iputil.ToFQDN(target)
 			if err != nil {
-				gologger.Warning().Msgf("%s\n", err)
+				gologger.Debug().Msgf("reverse ptr failed for %s: %s\n", target, err)
+			} else {
+				metadata = strings.Trim(names[0], ".")
 			}
+		}
+		err := r.scanner.IPRanger.AddHostWithMetadata(target, metadata)
+		if err != nil {
+			gologger.Warning().Msgf("%s\n", err)
 		}
 		return nil
 	}
@@ -184,22 +173,7 @@ func (r *Runner) AddTarget(target string) error {
 	}
 
 	for _, ip := range ips {
-		if r.options.Stream {
-			if hasPort {
-				r.streamChannel <- Target{Ip: ip, Port: port}
-				if len(r.options.Ports) > 0 {
-					r.streamChannel <- Target{Cidr: iputil.ToCidr(ip).String()}
-					if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, ""), target); err != nil {
-						gologger.Warning().Msgf("%s\n", err)
-					}
-				}
-			} else {
-				r.streamChannel <- Target{Cidr: iputil.ToCidr(ip).String()}
-				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, port), target); err != nil {
-					gologger.Warning().Msgf("%s\n", err)
-				}
-			}
-		} else if hasPort {
+		if hasPort {
 			if len(r.options.Ports) > 0 {
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, ""), target); err != nil {
 					gologger.Warning().Msgf("%s\n", err)

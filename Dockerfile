@@ -4,11 +4,11 @@ RUN apk add --no-cache build-base libpcap-dev
 WORKDIR /app
 COPY . /app
 RUN go mod download
-RUN go build ./cmd/naabu
+RUN go build ./cmd/sx
 
 # Release
 FROM alpine:3.22.2
 RUN apk upgrade --no-cache \
     && apk add --no-cache nmap libpcap-dev bind-tools ca-certificates nmap-scripts
-COPY --from=build-env /app/naabu /usr/local/bin/
-ENTRYPOINT ["naabu"]
+COPY --from=build-env /app/sx /usr/local/bin/
+ENTRYPOINT ["sx"]

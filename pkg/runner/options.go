@@ -22,16 +22,13 @@ import (
 // nolint:maligned // just an option structure
 type Options struct {
 	Verbose        bool // Verbose flag indicates whether to show verbose output or not
-	NoColor        bool // No-Color disables the colored output
 	JSON           bool // JSON specifies whether to use json for output format or text file
 	Silent         bool // Silent suppresses any extra text and only writes found host:port to screen
 	Stdin          bool // Stdin specifies whether stdin input was given to the process
 	Verify         bool // Verify is used to check if the ports found were valid using CONNECT method
-	Version        bool // Version specifies if we should just show version and exit
 	Ping           bool // Ping uses ping probes to discover fastest active host and discover dead hosts
 	Debug          bool // Prints out debug information
 	ExcludeCDN     bool // Excludes ip of knows CDN ranges for full port scan
-	Nmap           bool // Invoke nmap detailed scan on results (only when NmapCLI is provided)
 	InterfacesList bool // InterfacesList show interfaces list
 
 	Retries int // Retries is the number of retries for the port
@@ -55,7 +52,6 @@ type Options struct {
 	SourcePort          string              // Source Port to use in packets
 	Interface           string              // Interface to use for TCP packets
 	ConfigFile          string              // Config file contains a scan configuration
-	NmapCLI             string              // Nmap command (has priority over config file)
 	Threads             int                 // Internal worker threads
 	// Deprecated: stats are automatically available through local endpoint
 	EnableProgressBar bool // Enable progress bar
@@ -75,7 +71,6 @@ type Options struct {
 	Resume            bool
 	ResumeCfg         *ResumeCfg
 	OutputCDN         bool // display cdn in use
-	HealthCheck       bool
 	OnlyHostDiscovery bool // Perform only host discovery
 	// Deprecated: use WithHostDiscovery instead
 	SkipHostDiscovery bool // Skip Host discovery
@@ -188,12 +183,9 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("debug", "Debug",
-		flagSet.BoolVarP(&options.HealthCheck, "hc", "health-check", false, "run diagnostic check up"),
 		flagSet.BoolVar(&options.Debug, "debug", false, "display debugging information"),
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "display verbose output"),
-		flagSet.BoolVarP(&options.NoColor, "nc", "no-color", false, "disable colors in CLI output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
-		flagSet.BoolVar(&options.Version, "version", false, "display version of sx"),
 		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "display stats of the running scan (deprecated)"),
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update (deprecated)"),
 		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose sx metrics on"),
@@ -222,11 +214,6 @@ func ParseOptions() *Options {
 		}
 	}
 
-	if options.HealthCheck {
-		gologger.Print().Msgf("%s\n", DoHealthCheck(options, flagSet))
-		os.Exit(0)
-	}
-
 	// Check if stdin pipe was given
 	options.Stdin = !options.DisableStdin && fileutil.HasStdin()
 
@@ -237,11 +224,6 @@ func ParseOptions() *Options {
 		}
 	}
 	options.configureOutput()
-
-	if options.Version {
-		gologger.Info().Msgf("Current Version: %s\n", Version)
-		os.Exit(0)
-	}
 
 	// Show network configuration and exit if the user requested it
 	if options.InterfacesList {

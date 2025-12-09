@@ -10,8 +10,6 @@ import (
 	osutil "github.com/projectdiscovery/utils/os"
 )
 
-const Version = `2.3.7`
-
 // showNetworkCapabilities shows the network capabilities/scan types possible with the running user
 func showNetworkCapabilities(options *Options) {
 	var accessLevel, scanType string

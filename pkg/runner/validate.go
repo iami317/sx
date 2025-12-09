@@ -18,7 +18,6 @@ import (
 	sliceutil "github.com/projectdiscovery/utils/slice"
 
 	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
 )
 
@@ -148,9 +147,7 @@ func (options *Options) configureOutput() {
 	if options.Debug {
 		gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
 	}
-	if options.NoColor {
-		gologger.DefaultLogger.SetFormatter(formatter.NewCLI(true))
-	}
+
 	if options.Silent {
 		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
 	}

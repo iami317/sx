@@ -195,11 +195,6 @@ func (r *Runner) onReceive(hostResult *result.HostResult) {
 		_ = r.unique.Set(ipPort, struct{}{})
 	}
 
-	// Skip immediate JSON/CSV output if nmap CLI is specified to postpone until after nmap integration
-	if r.options.NmapCLI != "" && (r.options.JSON || r.options.CSV) {
-		return
-	}
-
 	csvHeaderEnabled := true
 
 	buffer := bytes.Buffer{}

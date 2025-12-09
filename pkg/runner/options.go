@@ -3,27 +3,19 @@ package runner
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/result"
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/networkpolicy"
-	"github.com/projectdiscovery/utils/env"
 	fileutil "github.com/projectdiscovery/utils/file"
 	sliceutil "github.com/projectdiscovery/utils/slice"
 	"github.com/projectdiscovery/utils/structs"
 
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	pdcpauth "github.com/projectdiscovery/utils/auth/pdcp"
 	updateutils "github.com/projectdiscovery/utils/update"
-)
-
-var (
-	PDCPApiKey = ""
-	TeamIDEnv  = env.GetEnvOrDefault("PDCP_TEAM_ID", "")
 )
 
 // Options contains the configuration options for tuning
@@ -116,23 +108,9 @@ type Options struct {
 	MetricsPort int
 
 	NetworkPolicyOptions *networkpolicy.Options
-	// PdcpAuth for projectdiscovery cloud
-	PdcpAuth string
-	// PdcpAuthCredFile for projectdiscovery cloud
-	PdcpAuthCredFile string
 	// AssetUpload for projectdiscovery cloud
 	AssetUpload bool
-	// TeamID for projectdiscovery cloud
-	TeamID string
-	// AssetID for projectdiscovery cloud
-	AssetID string
-	// AssetName for projectdiscovery cloud
-	AssetName string
-	// AssetFileUpload for projectdiscovery cloud
-	AssetFileUpload string
-	// OnClose adds a callback function that is invoked when naabu is closed
-	// to be exact at end of existing closures
-	OnClose func()
+	OnClose     func()
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -163,11 +141,6 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVar(&options.Threads, "c", 25, "general internal worker threads"),
 		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "packets to send per second"),
-	)
-
-	flagSet.CreateGroup("update", "Update",
-		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update naabu to latest version"),
-		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic naabu update check"),
 	)
 
 	flagSet.CreateGroup("output", "Output",
@@ -244,16 +217,6 @@ func ParseOptions() *Options {
 		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose naabu metrics on"),
 	)
 
-	flagSet.CreateGroup("cloud", "Cloud",
-		flagSet.DynamicVar(&options.PdcpAuth, "auth", "true", "configure projectdiscovery cloud (pdcp) api key"),
-		flagSet.StringVarP(&options.PdcpAuthCredFile, "auth-config", "ac", "", "configure projectdiscovery cloud (pdcp) api key credential file"),
-		flagSet.BoolVarP(&options.AssetUpload, "dashboard", "pd", false, "upload / view output in projectdiscovery cloud (pdcp) UI dashboard"),
-		flagSet.StringVarP(&options.TeamID, "team-id", "tid", TeamIDEnv, "upload asset results to given team id (optional)"),
-		flagSet.StringVarP(&options.AssetID, "asset-id", "aid", "", "upload new assets to existing asset id (optional)"),
-		flagSet.StringVarP(&options.AssetName, "asset-name", "aname", "", "assets group name to set (optional)"),
-		flagSet.StringVarP(&options.AssetFileUpload, "dashboard-upload", "pdu", "", "upload naabu output file (jsonl) in projectdiscovery cloud (pdcp) UI dashboard"),
-	)
-
 	_ = flagSet.Parse()
 
 	if options.ListOutputFields {
@@ -277,25 +240,6 @@ func ParseOptions() *Options {
 		}
 	}
 
-	if options.PdcpAuthCredFile != "" {
-		pdcpauth.PDCPCredFile = options.PdcpAuthCredFile
-		pdcpauth.PDCPDir = filepath.Dir(pdcpauth.PDCPCredFile)
-	}
-
-	// api key hierarchy: cli flag > env var > .pdcp/credential file
-	if options.PdcpAuth == "true" {
-		AuthWithPDCP()
-	} else if len(options.PdcpAuth) == 36 {
-		PDCPApiKey = options.PdcpAuth
-		ph := pdcpauth.PDCPCredHandler{}
-		if _, err := ph.GetCreds(); err == pdcpauth.ErrNoCreds {
-			apiServer := env.GetEnvOrDefault("PDCP_API_SERVER", pdcpauth.DefaultApiServer)
-			if validatedCreds, err := ph.ValidateAPIKey(PDCPApiKey, apiServer, "naabu"); err == nil {
-				_ = ph.SaveCreds(validatedCreds)
-			}
-		}
-	}
-
 	if options.HealthCheck {
 		gologger.Print().Msgf("%s\n", DoHealthCheck(options, flagSet))
 		os.Exit(0)
@@ -311,8 +255,6 @@ func ParseOptions() *Options {
 		}
 	}
 	options.configureOutput()
-	// Show the user the banner
-	showBanner()
 
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", Version)

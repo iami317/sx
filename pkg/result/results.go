@@ -12,7 +12,6 @@ import (
 	"unicode"
 
 	"github.com/iami317/sx/pkg/port"
-	"github.com/iami317/sx/pkg/result/confidence"
 	"golang.org/x/exp/maps"
 )
 
@@ -30,7 +29,7 @@ type HostResult struct {
 	Host       string
 	IP         string
 	Ports      []*port.Port
-	Confidence confidence.ConfidenceLevel
+	Confidence ConfidenceLevel
 	OS         *OSFingerprint
 	MacAddress string
 }
@@ -87,9 +86,9 @@ func (r *Result) GetIPsPorts() chan *HostResult {
 		defer r.RUnlock()
 
 		for ip, ports := range r.ipPorts {
-			confidenceLevel := confidence.Normal
+			confidenceLevel := Normal
 			if r.HasSkipped(ip) {
-				confidenceLevel = confidence.Low
+				confidenceLevel = Low
 			}
 
 			hostResult := &HostResult{IP: ip, Ports: maps.Values(ports), Confidence: confidenceLevel}

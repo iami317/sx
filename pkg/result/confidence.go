@@ -1,4 +1,4 @@
-package confidence
+package result
 
 type ConfidenceLevel uint8
 

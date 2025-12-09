@@ -21,7 +21,6 @@ import (
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/protocol"
 	"github.com/iami317/sx/pkg/result"
-	"github.com/iami317/sx/pkg/result/confidence"
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/iami317/sx/pkg/utils/limits"
 	"github.com/miekg/dns"
@@ -788,7 +787,7 @@ func (r *Runner) ConnectVerification() {
 			defer swg.Done()
 
 			// skip low confidence
-			if hostResult.Confidence == confidence.Low {
+			if hostResult.Confidence == result.Low {
 				return
 			}
 

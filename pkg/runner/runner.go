@@ -400,7 +400,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			}
 			if r.options.PortThreshold > 0 && r.scanner.ScanResults.GetPortCount(ip) >= r.options.PortThreshold {
 				hosts, _ := r.scanner.IPRanger.GetHostsByIP(ip)
-				gologger.Info().Msgf("Skipping %s %v, Threshold reached \n", ip, hosts)
+				gologger.Debug().Msgf("Skipping %s %v, Threshold reached \n", ip, hosts)
 				r.scanner.ScanResults.AddSkipped(ip)
 				continue
 			}
@@ -851,7 +851,7 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 					host = hostResult.IP
 				}
 				isCDNIP, cdnName, _ := r.scanner.CdnCheck(hostResult.IP)
-				gologger.Info().Msgf("Found %d ports on host %s (%s)\n", len(hostResult.Ports), host, hostResult.IP)
+				gologger.Debug().Msgf("Found %d ports on host %s (%s)\n", len(hostResult.Ports), host, hostResult.IP)
 
 				// console output
 				if r.options.JSON || r.options.CSV {

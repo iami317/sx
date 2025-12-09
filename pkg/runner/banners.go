@@ -29,14 +29,14 @@ func showNetworkCapabilities(options *Options) {
 	switch {
 	case options.OnlyHostDiscovery:
 		scanType = "Host Discovery"
-		gologger.Info().Msgf("Running %s\n", scanType)
+		gologger.Debug().Msgf("Running %s\n", scanType)
 	default:
-		gologger.Info().Msgf("Running %s scan with %s privileges\n", scanType, accessLevel)
+		gologger.Debug().Msgf("Running %s scan with %s privileges\n", scanType, accessLevel)
 	}
 }
 
 func showHostDiscoveryInfo() {
-	gologger.Info().Msgf("Running host discovery scan\n")
+	gologger.Debug().Msgf("Running host discovery scan\n")
 }
 
 func showNetworkInterfaces() error {
@@ -55,14 +55,14 @@ func showNetworkInterfaces() error {
 		for _, address := range addresses {
 			addrstr = append(addrstr, address.String())
 		}
-		gologger.Info().Msgf("Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n", itf.Name, itf.HardwareAddr, strings.Join(addrstr, " "), itf.MTU, itf.Flags.String())
+		gologger.Debug().Msgf("Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n", itf.Name, itf.HardwareAddr, strings.Join(addrstr, " "), itf.MTU, itf.Flags.String())
 	}
 	// External ip
 	externalIP, err := scan.WhatsMyIP()
 	if err != nil {
 		gologger.Warning().Msgf("Could not obtain public ip: %s\n", err)
 	}
-	gologger.Info().Msgf("External Ip: %s\n", externalIP)
+	gologger.Debug().Msgf("External Ip: %s\n", externalIP)
 
 	return nil
 }

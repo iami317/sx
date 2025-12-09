@@ -147,17 +147,6 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	runner.scanner.Ports = ports
 
-	if options.EnableProgressBar {
-		defaultOptions := &clistats.DefaultOptions
-		defaultOptions.ListenPort = options.MetricsPort
-		stats, err := clistats.NewWithOptions(context.Background(), defaultOptions)
-		if err != nil {
-			gologger.Warning().Msgf("Couldn't create progress engine: %s\n", err)
-		} else {
-			runner.stats = stats
-		}
-	}
-
 	return runner, nil
 }
 
@@ -347,7 +336,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var targetsCount, portsCount, targetsWithPortCount uint64
+	var targetsCount, portsCount uint64
 	for _, target := range append(targetsV4, targetsv6...) {
 		if target == nil {
 			continue
@@ -355,23 +344,9 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		targetsCount += mapcidr.AddressCountIpnet(target)
 	}
 	portsCount = uint64(len(r.scanner.Ports))
-	targetsWithPortCount = uint64(len(targetsWithPort))
 
 	r.scanner.ListenHandler.Phase.Set(scan.Scan)
 	Range := targetsCount * portsCount
-	if r.options.EnableProgressBar {
-		r.stats.AddStatic("ports", portsCount)
-		r.stats.AddStatic("hosts", targetsCount)
-		r.stats.AddStatic("retries", r.options.Retries)
-		r.stats.AddStatic("startedAt", time.Now())
-		r.stats.AddCounter("packets", uint64(0))
-		r.stats.AddCounter("errors", uint64(0))
-		r.stats.AddCounter("total", Range*uint64(r.options.Retries)+targetsWithPortCount)
-		r.stats.AddStatic("hosts_with_port", targetsWithPortCount)
-		if err := r.stats.Start(); err != nil {
-			gologger.Warning().Msgf("Couldn't start statistics: %s\n", err)
-		}
-	}
 
 	// Retries are performed regardless of the previous scan results due to network unreliability
 	for currentRetry := 0; currentRetry < r.options.Retries; currentRetry++ {
@@ -437,9 +412,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 				r.wgscan.Add()
 				go r.handleHostPort(ctx, ip, payload, port)
 			}
-			if r.options.EnableProgressBar {
-				r.stats.IncrementCounter("packets", 1)
-			}
 		}
 
 		// handle the ip:port combination
@@ -467,9 +439,6 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			} else {
 				r.wgscan.Add()
 				go r.handleHostPort(ctx, ip, payload, &portWithMetadata)
-			}
-			if r.options.EnableProgressBar {
-				r.stats.IncrementCounter("packets", 1)
 			}
 		}
 
@@ -572,11 +541,7 @@ func (r *Runner) Close() error {
 	if err := r.scanner.IPRanger.Hosts.Close(); err != nil {
 		return err
 	}
-	if r.options.EnableProgressBar {
-		if err := r.stats.Stop(); err != nil {
-			return err
-		}
-	}
+
 	if r.scanner != nil {
 		if err := r.scanner.Close(); err != nil {
 			return err

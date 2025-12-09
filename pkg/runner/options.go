@@ -53,8 +53,6 @@ type Options struct {
 	Interface           string              // Interface to use for TCP packets
 	ConfigFile          string              // Config file contains a scan configuration
 	Threads             int                 // Internal worker threads
-	// Deprecated: stats are automatically available through local endpoint
-	EnableProgressBar bool // Enable progress bar
 	// Deprecated: stats are automatically available through local endpoint (maybe used on cloud?)
 	StatsInterval     int                 // StatsInterval is the number of seconds to display stats after
 	ScanAllIPS        bool                // Scan all the ips
@@ -90,8 +88,6 @@ type Options struct {
 	DisableStdin     bool
 	// ReversePTR lookup for ips
 	ReversePTR bool
-	// MetricsPort with statistics
-	MetricsPort int
 
 	NetworkPolicyOptions *networkpolicy.Options
 	// AssetUpload for projectdiscovery cloud
@@ -186,9 +182,6 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Debug, "debug", false, "display debugging information"),
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "display verbose output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
-		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "display stats of the running scan (deprecated)"),
-		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update (deprecated)"),
-		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 63636, "port to expose sx metrics on"),
 	)
 
 	_ = flagSet.Parse()

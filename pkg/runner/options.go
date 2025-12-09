@@ -54,29 +54,25 @@ type Options struct {
 	ConfigFile          string              // Config file contains a scan configuration
 	Threads             int                 // Internal worker threads
 	// Deprecated: stats are automatically available through local endpoint (maybe used on cloud?)
-	StatsInterval     int                 // StatsInterval is the number of seconds to display stats after
-	ScanAllIPS        bool                // Scan all the ips
-	IPVersion         goflags.StringSlice // IP Version to use while resolving hostnames
-	ScanType          string              // Scan Type
-	ConnectPayload    string              // Payload to use with CONNECT scan types
-	Proxy             string              // Socks5 proxy
-	ProxyAuth         string              // Socks5 proxy authentication (username:password)
-	Resolvers         string              // Resolvers (comma separated or file)
-	baseResolvers     []string
-	OnResult          result.ResultFn // callback on final host result
-	OnReceive         result.ResultFn // callback on response receive
-	CSV               bool
-	Resume            bool
-	ResumeCfg         *ResumeCfg
-	OutputCDN         bool // display cdn in use
-	OnlyHostDiscovery bool // Perform only host discovery
-	// Deprecated: use WithHostDiscovery instead
-	SkipHostDiscovery bool // Skip Host discovery
-	WithHostDiscovery bool // Enable Host discovery
-	TcpSynPingProbes  goflags.StringSlice
-	TcpAckPingProbes  goflags.StringSlice
-	// UdpPingProbes               goflags.StringSlice - planned
-	// STcpInitPingProbes          goflags.StringSlice - planned
+	StatsInterval               int                 // StatsInterval is the number of seconds to display stats after
+	ScanAllIPS                  bool                // Scan all the ips
+	IPVersion                   goflags.StringSlice // IP Version to use while resolving hostnames
+	ScanType                    string              // Scan Type
+	ConnectPayload              string              // Payload to use with CONNECT scan types
+	Proxy                       string              // Socks5 proxy
+	ProxyAuth                   string              // Socks5 proxy authentication (username:password)
+	Resolvers                   string              // Resolvers (comma separated or file)
+	baseResolvers               []string
+	OnResult                    result.ResultFn // callback on final host result
+	OnReceive                   result.ResultFn // callback on response receive
+	CSV                         bool
+	Resume                      bool
+	ResumeCfg                   *ResumeCfg
+	OutputCDN                   bool // display cdn in use
+	OnlyHostDiscovery           bool // Perform only host discovery
+	WithHostDiscovery           bool // Enable Host discovery
+	TcpSynPingProbes            goflags.StringSlice
+	TcpAckPingProbes            goflags.StringSlice
 	IcmpEchoRequestProbe        bool
 	IcmpTimestampRequestProbe   bool
 	IcmpAddressMaskRequestProbe bool
@@ -152,8 +148,6 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("host-discovery", "Host-Discovery",
 		flagSet.BoolVarP(&options.OnlyHostDiscovery, "host-discovery", "sn", false, "Perform Only Host Discovery"),
-		// Deprecated: use WithHostDiscovery instead
-		flagSet.BoolVarP(&options.SkipHostDiscovery, "skip-host-discovery", "Pn", false, "Skip Host discovery"),
 		flagSet.BoolVarP(&options.WithHostDiscovery, "with-host-discovery", "wn", false, "Enable Host discovery"),
 		flagSet.StringSliceVarP(&options.TcpSynPingProbes, "probe-tcp-syn", "ps", nil, "TCP SYN Ping (host discovery needs to be enabled)", goflags.StringSliceOptions),
 		flagSet.StringSliceVarP(&options.TcpAckPingProbes, "probe-tcp-ack", "pa", nil, "TCP ACK Ping (host discovery needs to be enabled)", goflags.StringSliceOptions),
@@ -163,11 +157,6 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.ArpPing, "arp-ping", "arp", false, "ARP ping (host discovery needs to be enabled)"),
 		flagSet.BoolVarP(&options.IPv6NeighborDiscoveryPing, "nd-ping", "nd", false, "IPv6 Neighbor Discovery (host discovery needs to be enabled)"),
 		flagSet.BoolVar(&options.ReversePTR, "rev-ptr", false, "Reverse PTR lookup for input ips"),
-		// The following flags are left as placeholder
-		// flagSet.StringSliceVarP(&options.IpProtocolPingProbes, "probe-ip-protocol", "po", []string{}, "IP Protocol Ping"),
-		// flagSet.StringSliceVarP(&options.UdpPingProbes, "probe-udp", "pu", []string{}, "UDP Ping"),
-		// flagSet.StringSliceVarP(&options.STcpInitPingProbes, "probe-stcp-init", "py", []string{}, "SCTP INIT Ping"),
-		// flagSet.BoolVarP(&options.HostDiscoveryIgnoreRST, "discovery-ignore-rst", "irst", false, "Ignore RST packets during host discovery"),
 	)
 
 	flagSet.CreateGroup("optimization", "Optimization",

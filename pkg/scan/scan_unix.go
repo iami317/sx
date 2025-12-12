@@ -76,7 +76,7 @@ func init() {
 		InterfaceHandle: make(map[string]*pcap.Handle),
 	}
 	if err := SetupHandlers(); err != nil {
-		logx.Errorf("could not setup handlers: %s\n", err)
+		logx.Errorf("could not setup handlers: %s", err)
 		return
 	}
 	go TransportReadWorker()
@@ -187,12 +187,12 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 		// both source IP and HW.
 		itf, gateway, _, err := PkgRouter.RouteWithSrc(listenHandler.SourceHW, listenHandler.SourceIp4, ip4.DstIP)
 		if err != nil {
-			logx.Debugf("could not find route to host %s:%d: %s\n", ip, p.Port, err)
+			logx.Debugf("could not find route to host %s:%d: %s", ip, p.Port, err)
 			return
 		}
 		gatewayMac, err := routing.GetGatewayMac(gateway.String())
 		if err != nil {
-			logx.Debugf("could not find gateway MAC %s:%d: %s\n", ip, p.Port, err)
+			logx.Debugf("could not find gateway MAC %s:%d: %s", ip, p.Port, err)
 			return
 		}
 
@@ -211,10 +211,10 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 		} else {
 			_, _, sourceIP, err := PkgRouter.Route(ip4.DstIP)
 			if err != nil {
-				logx.Debugf("could not find route to host %s:%d: %s\n", ip, p.Port, err)
+				logx.Debugf("could not find route to host %s:%d: %s", ip, p.Port, err)
 				return
 			} else if sourceIP == nil {
-				logx.Debugf("could not find correct source ipv4 for %s:%d\n", ip, p.Port)
+				logx.Debugf("could not find correct source ipv4 for %s:%d", ip, p.Port)
 				return
 			}
 			ip4.SrcIP = sourceIP
@@ -244,14 +244,14 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err := tcp.SetNetworkLayerForChecksum(&ip4)
 	if err != nil {
-		logx.Debugf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		logx.Debugf("can not set network layer for %s:%d port: %s", ip, p.Port, err)
 	}
 
 	if hasSourceIp && listenHandler.SourceHW != nil && iface != nil {
 		err = sendWithHandler(ip, iface, &eth, &ip4, &tcp)
 	} else {
 		if listenHandler.TcpConn4 == nil {
-			logx.Debugf("TcpConn4 is nil, cannot send packet to %s:%d\n", ip, p.Port)
+			logx.Debugf("TcpConn4 is nil, cannot send packet to %s:%d", ip, p.Port)
 			return
 		}
 
@@ -259,7 +259,7 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 	}
 
 	if err != nil {
-		logx.Debugf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+		logx.Debugf("can not send packet to %s:%d port: %s", ip, p.Port, err)
 	}
 }
 
@@ -273,10 +273,10 @@ func sendAsyncUDP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 	}
 	_, _, sourceIP, err := PkgRouter.Route(ip4.DstIP)
 	if err != nil {
-		logx.Debugf("could not find route to host %s:%d: %s\n", ip, p.Port, err)
+		logx.Debugf("could not find route to host %s:%d: %s", ip, p.Port, err)
 		return
 	} else if sourceIP == nil {
-		logx.Debugf("could not find correct source ipv4 for %s:%d\n", ip, p.Port)
+		logx.Debugf("could not find correct source ipv4 for %s:%d", ip, p.Port)
 		return
 	}
 
@@ -293,16 +293,16 @@ func sendAsyncUDP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = udp.SetNetworkLayerForChecksum(&ip4)
 	if err != nil {
-		logx.Debugf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		logx.Debugf("can not set network layer for %s:%d port: %s", ip, p.Port, err)
 	} else {
 		if listenHandler.UdpConn4 == nil {
-			logx.Debugf("UdpConn4 is nil, cannot send packet to %s:%d\n", ip, p.Port)
+			logx.Debugf("UdpConn4 is nil, cannot send packet to %s:%d", ip, p.Port)
 			return
 		}
 
 		err = sendWithConn(ip, listenHandler.UdpConn4, &udp)
 		if err != nil {
-			logx.Debugf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			logx.Debugf("can not send packet to %s:%d port: %s", ip, p.Port, err)
 		}
 	}
 }
@@ -318,10 +318,10 @@ func sendAsyncTCP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	_, _, sourceIP, err := PkgRouter.Route(ip6.DstIP)
 	if err != nil {
-		logx.Debugf("could not find route to host %s:%d: %s\n", ip, p.Port, err)
+		logx.Debugf("could not find route to host %s:%d: %s", ip, p.Port, err)
 		return
 	} else if sourceIP == nil {
-		logx.Debugf("could not find correct source ipv6 for %s:%d\n", ip, p.Port)
+		logx.Debugf("could not find correct source ipv6 for %s:%d", ip, p.Port)
 		return
 	}
 
@@ -354,16 +354,16 @@ func sendAsyncTCP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = tcp.SetNetworkLayerForChecksum(&ip6)
 	if err != nil {
-		logx.Debugf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		logx.Debugf("can not set network layer for %s:%d port: %s", ip, p.Port, err)
 	} else {
 		if listenHandler.TcpConn6 == nil {
-			logx.Debugf("TcpConn6 is nil, cannot send packet to %s:%d\n", ip, p.Port)
+			logx.Debugf("TcpConn6 is nil, cannot send packet to %s:%d", ip, p.Port)
 			return
 		}
 
 		err = sendWithConn(ip, listenHandler.TcpConn6, &tcp)
 		if err != nil {
-			logx.Debugf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			logx.Debugf("can not send packet to %s:%d port: %s", ip, p.Port, err)
 		}
 	}
 }
@@ -379,10 +379,10 @@ func sendAsyncUDP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	_, _, sourceIP, err := PkgRouter.Route(ip6.DstIP)
 	if err != nil {
-		logx.Debugf("could not find route to host %s:%d: %s\n", ip, p.Port, err)
+		logx.Debugf("could not find route to host %s:%d: %s", ip, p.Port, err)
 		return
 	} else if sourceIP == nil {
-		logx.Debugf("could not find correct source ipv6 for %s:%d\n", ip, p.Port)
+		logx.Debugf("could not find correct source ipv6 for %s:%d", ip, p.Port)
 		return
 	}
 
@@ -399,16 +399,16 @@ func sendAsyncUDP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = udp.SetNetworkLayerForChecksum(&ip6)
 	if err != nil {
-		logx.Debugf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		logx.Debugf("can not set network layer for %s:%d port: %s", ip, p.Port, err)
 	} else {
 		if listenHandler.UdpConn6 == nil {
-			logx.Debugf("UdpConn6 is nil, cannot send packet to %s:%d\n", ip, p.Port)
+			logx.Debugf("UdpConn6 is nil, cannot send packet to %s:%d", ip, p.Port)
 			return
 		}
 
 		err = sendWithConn(ip, listenHandler.UdpConn6, &udp)
 		if err != nil {
-			logx.Debugf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			logx.Debugf("can not send packet to %s:%d port: %s", ip, p.Port, err)
 		}
 	}
 }
@@ -643,7 +643,7 @@ func TransportReadWorker() {
 			sourcePortMatches := tcpPortMatches || udpPortMatches
 			switch {
 			case !sourcePortMatches:
-				logx.Debugf("Discarding Transport packet from non target ips: ip4=%s ip6=%s tcp_dport=%d udp_dport=%d\n", srcIP4, srcIP6, tcp.DstPort, udp.DstPort)
+				logx.Debugf("Discarding Transport packet from non target ips: ip4=%s ip6=%s tcp_dport=%d udp_dport=%d", srcIP4, srcIP6, tcp.DstPort, udp.DstPort)
 			case listenHandler.Phase.Is(HostDiscovery):
 				proto := protocol.TCP
 				if udpPortMatches {
@@ -951,7 +951,7 @@ func ACKPort(listenHandler *ListenHandler, dstIP string, port int, timeout time.
 
 		// not matching ip
 		if addr.String() != dstIP {
-			logx.Debugf("Discarding TCP packet from non target ip %s for %s\n", dstIP, addr.String())
+			logx.Debugf("Discarding TCP packet from non target ip %s for %s", dstIP, addr.String())
 			continue
 		}
 
@@ -963,10 +963,10 @@ func ACKPort(listenHandler *ListenHandler, dstIP string, port int, timeout time.
 			}
 			// We consider only incoming packets
 			if tcp.DstPort != layers.TCPPort(rawPort.Port) {
-				logx.Debugf("Discarding TCP packet from %s:%d not matching %s:%d port\n", addr.String(), tcp.DstPort, dstIP, rawPort.Port)
+				logx.Debugf("Discarding TCP packet from %s:%d not matching %s:%d port", addr.String(), tcp.DstPort, dstIP, rawPort.Port)
 				continue
 			} else if tcp.RST {
-				logx.Debugf("Accepting RST packet from %s:%d\n", addr.String(), tcp.DstPort)
+				logx.Debugf("Accepting RST packet from %s:%d", addr.String(), tcp.DstPort)
 				return true, nil
 			}
 		}

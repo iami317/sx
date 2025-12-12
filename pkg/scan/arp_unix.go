@@ -22,7 +22,7 @@ func arpRequestAsync(ip string) {
 		err = errors.New("Could not send ARP Request packet to " + ip + ": no interface with outbound source found")
 	}
 	if err != nil {
-		logx.Debugf("%s\n", err)
+		logx.Debugf("%s", err)
 		return
 	}
 	// network layers
@@ -52,14 +52,14 @@ func arpRequestAsync(ip string) {
 
 	err = gopacket.SerializeLayers(buf, opts, &eth, &arp)
 	if err != nil {
-		logx.Warnf("%s\n", err)
+		logx.Warnf("%s", err)
 		return
 	}
 	// send the packet out on every interface
 	for _, handler := range handlers.EthernetActive {
 		err := handler.WritePacketData(buf.Bytes())
 		if err != nil {
-			logx.Warnf("%s\n", err)
+			logx.Warnf("%s", err)
 		}
 	}
 }

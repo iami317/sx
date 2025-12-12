@@ -17,7 +17,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 	if !ipUtil.IsIP(target) {
 		dnsData, err := r.dnsclient.QueryMultiple(target)
 		if err != nil || dnsData == nil {
-			logx.Warnf("could not get IP for host: %s\n", target)
+			logx.Warnf("could not get IP for host: %s", target)
 			return nil, nil, err
 		}
 		if len(r.options.IPVersion) > 0 {
@@ -35,7 +35,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 		}
 	} else {
 		targetIPsV4 = append(targetIPsV6, target)
-		logx.Debugf("found %d addresses for %s\n", len(targetIPsV4), target)
+		logx.Debugf("found %d addresses for %s", len(targetIPsV4), target)
 	}
 
 	return

@@ -70,7 +70,7 @@ func (l *ListenHandler) Release() {
 
 func init() {
 	if r, err := routing.New(); err != nil {
-		logx.Errorf("could not initialize router: %s\n", err)
+		logx.Errorf("could not initialize router: %s", err)
 	} else {
 		PkgRouter = r
 	}

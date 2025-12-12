@@ -16,7 +16,7 @@ func main() {
 	options := runner.ParseOptions()
 	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
-		logx.Fatalf("could not create runner: %s\n", err)
+		logx.Fatalf("could not create runner: %s", err)
 	}
 
 	// Setup context with cancelation
@@ -27,16 +27,16 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-c
-		logx.Infof("received signal: %s, exiting gracefully...\n", sig)
+		logx.Infof("received signal: %s, exiting gracefully...", sig)
 
 		// Cancel context to stop ongoing tasks
 		cancel()
 
 		// Try to save resume config if needed
 		if options.ResumeCfg != nil && options.ResumeCfg.ShouldSaveResume() {
-			logx.Infof("creating resume file: %s\n", runner.DefaultResumeFilePath())
+			logx.Infof("creating resume file: %s", runner.DefaultResumeFilePath())
 			if err := options.ResumeCfg.SaveResumeConfig(); err != nil {
-				logx.Errorf("couldn't create resume file: %s\n", err)
+				logx.Errorf("couldn't create resume file: %s", err)
 			}
 		}
 
@@ -45,7 +45,7 @@ func main() {
 			sxRunner.ShowScanResultOnExit()
 
 			if err := sxRunner.Close(); err != nil {
-				logx.Errorf("couldn't close runner: %s\n", err)
+				logx.Errorf("couldn't close runner: %s", err)
 			}
 		}
 
@@ -54,12 +54,12 @@ func main() {
 
 	// Start enumeration
 	if err := sxRunner.RunEnumeration(ctx); err != nil {
-		logx.Fatalf("could not run enumeration: %s\n", err)
+		logx.Fatalf("could not run enumeration: %s", err)
 	}
 
 	defer func() {
 		if err := sxRunner.Close(); err != nil {
-			logx.Errorf("couldn't close runner: %s\n", err)
+			logx.Errorf("couldn't close runner: %s", err)
 		}
 		// On successful execution, cleanup resume config if needed
 		if options.ResumeCfg != nil {

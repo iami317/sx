@@ -20,7 +20,7 @@ func PingNdpRequestAsync(ip string) {
 		err = errors.New("Could not send PingNdp Request packet to " + ip + ": no interface with outbound source found")
 	}
 	if err != nil {
-		logx.Debugf("%s\n", err)
+		logx.Debugf("%s", err)
 		return
 	}
 	destAddr := &net.UDPAddr{IP: net.ParseIP(ip), Zone: networkInterface.Name}

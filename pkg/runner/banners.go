@@ -29,14 +29,14 @@ func showNetworkCapabilities(options *Options) {
 	switch {
 	case options.OnlyHostDiscovery:
 		scanType = "Host Discovery"
-		logx.Debugf("running %s\n", scanType)
+		logx.Debugf("running %s", scanType)
 	default:
-		logx.Debugf("running %s scan with %s privileges\n", scanType, accessLevel)
+		logx.Debugf("running %s scan with %s privileges", scanType, accessLevel)
 	}
 }
 
 func showHostDiscoveryInfo() {
-	logx.Debugf("running host discovery scan\n")
+	logx.Debugf("running host discovery scan")
 }
 
 func showNetworkInterfaces() error {
@@ -48,7 +48,7 @@ func showNetworkInterfaces() error {
 	for _, itf := range interfaces {
 		addresses, addErr := itf.Addrs()
 		if addErr != nil {
-			logx.Warnf("could not retrieve addresses for %s: %s\n", itf.Name, addErr)
+			logx.Warnf("could not retrieve addresses for %s: %s", itf.Name, addErr)
 			continue
 		}
 		var addrstr []string
@@ -66,9 +66,9 @@ func showNetworkInterfaces() error {
 	// External ip
 	externalIP, err := scan.WhatsMyIP()
 	if err != nil {
-		logx.Warnf("could not obtain public ip: %s\n", err)
+		logx.Warnf("could not obtain public ip: %s", err)
 	}
-	logx.Infof("external Ip: %s\n", externalIP)
+	logx.Infof("external Ip: %s", externalIP)
 
 	return nil
 }

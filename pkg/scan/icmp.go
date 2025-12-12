@@ -102,7 +102,7 @@ func PingIcmpEchoRequestAsync(ip string) {
 			err = fmt.Errorf("could not send ICMP Echo Request packet to %s: no interface with outbout source ipv6 found", destinationIP)
 		}
 		if err != nil {
-			logx.Debugf("%s\n", err)
+			logx.Debugf("%s", err)
 			return
 		}
 		destAddr = &net.UDPAddr{IP: destinationIP, Zone: networkInterface.Name}

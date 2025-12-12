@@ -168,7 +168,7 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("debug", "Debug",
-		flagSet.BoolVar(&options.Debug, "debug", false, "显示debug信息"),
+		flagSet.BoolVar(&options.Debug, "debug", true, "显示debug信息"),
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "显示verbose信息"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "仅仅显示结果信息"),
 	)
@@ -178,7 +178,7 @@ func ParseOptions() *Options {
 	if options.ListOutputFields {
 		fields, err := structs.GetStructFields(Result{})
 		if err != nil {
-			logx.Fatalf("could not get struct fields: %s\n", err)
+			logx.Fatalf("could not get struct fields: %s", err)
 		}
 		for _, field := range fields {
 			fmt.Println(field)
@@ -192,7 +192,7 @@ func ParseOptions() *Options {
 		}
 		// merge config file with flags
 		if err := flagSet.MergeConfigFile(cfgFile); err != nil {
-			logx.Fatalf("could not read config: %s\n", err)
+			logx.Fatalf("could not read config: %s", err)
 		}
 	}
 
@@ -202,7 +202,7 @@ func ParseOptions() *Options {
 	options.ResumeCfg = NewResumeCfg()
 	if options.ShouldLoadResume() {
 		if err := options.ResumeCfg.ConfigureResume(); err != nil {
-			logx.Fatalf("%s\n", err)
+			logx.Fatalf("%s", err)
 		}
 	}
 	options.configureOutput()
@@ -211,7 +211,7 @@ func ParseOptions() *Options {
 	if options.InterfacesList {
 		err := showNetworkInterfaces()
 		if err != nil {
-			logx.Errorf("could not get network interfaces: %s\n", err)
+			logx.Errorf("could not get network interfaces: %s", err)
 		}
 		os.Exit(0)
 	}
@@ -220,7 +220,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err := options.ValidateOptions()
 	if err != nil {
-		logx.Fatalf("program exiting: %s\n", err)
+		logx.Fatalf("program exiting: %s", err)
 	}
 
 	return options

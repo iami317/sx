@@ -102,7 +102,7 @@ func New() (Router, error) {
 			default:
 				// use last route type and print a warning
 				if lastType != "" {
-					logx.Debugf("using '%s' for unknown route type: '%s'\n", lastType, outputLine)
+					logx.Debugf("using '%s' for unknown route type: '%s'", lastType, outputLine)
 					route.Type = lastType
 				} else {
 					// we can't determine the route type

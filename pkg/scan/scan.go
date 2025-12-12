@@ -256,7 +256,7 @@ func (s *Scanner) ICMPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.HostDiscoveryChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Debugf("received ICMP response from %s\n", ip.ipv4)
+				logx.Debugf("received ICMP response from %s", ip.ipv4)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -279,7 +279,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s", ip.ipv4, ip.ipv6)
 				continue
 			}
 
@@ -293,7 +293,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 				}
 			}
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Debugf("received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -301,7 +301,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				logx.Debugf("received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -324,12 +324,12 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s", ip.ipv4, ip.ipv6)
 				continue
 			}
 
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Debugf("received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received UDP probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -337,7 +337,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				logx.Debugf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}

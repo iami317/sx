@@ -17,7 +17,7 @@ func (s *Scanner) ConnectVerify(host string, ports []*port.Port) []*port.Port {
 		if err != nil {
 			continue
 		}
-		logx.Debugf("validated active port %d on %s\n", p.Port, host)
+		logx.Debugf("validated active port %d on %s", p.Port, host)
 		_ = conn.Close()
 		verifiedPorts = append(verifiedPorts, p)
 	}

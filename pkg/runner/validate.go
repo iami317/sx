@@ -156,7 +156,7 @@ func (options *Options) configureOutput() {
 func (options *Options) configureHostDiscovery(ports []*port.Port) {
 	// if less than two ports are specified as input, reduce time and scan directly
 	if len(ports) <= 2 {
-		logx.Infof("host discovery disabled: less than two ports were specified")
+		logx.Debugf("host discovery disabled: less than two ports were specified")
 		options.WithHostDiscovery = false
 	}
 	if options.shouldDiscoverHosts() && !options.hasProbes() {

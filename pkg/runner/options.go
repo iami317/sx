@@ -97,7 +97,7 @@ func ParseOptions() *Options {
 	var cfgFile string
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`sx是一个用Go语言编写的端口扫描工具，可以快速、可靠地枚举主机开放的端口。`)
+	flagSet.SetDescription(`sx 是一个用Go语言编写的端口扫描工具，可以快速、可靠地枚举主机开放的端口。`)
 
 	flagSet.CreateGroup("input", "输入",
 		flagSet.StringSliceVarP(&options.Host, "host", "", nil, "要扫描端口的主机(以逗号分隔)", goflags.NormalizedStringSliceOptions),

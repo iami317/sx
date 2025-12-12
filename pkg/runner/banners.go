@@ -55,7 +55,7 @@ func showNetworkInterfaces() error {
 		for _, address := range addresses {
 			addrstr = append(addrstr, address.String())
 		}
-		logx.Debugf(
+		logx.Infof(
 			"Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n",
 			itf.Name,
 			itf.HardwareAddr,
@@ -68,7 +68,7 @@ func showNetworkInterfaces() error {
 	if err != nil {
 		logx.Warnf("could not obtain public ip: %s\n", err)
 	}
-	logx.Debugf("external Ip: %s\n", externalIP)
+	logx.Infof("external Ip: %s\n", externalIP)
 
 	return nil
 }

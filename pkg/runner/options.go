@@ -9,8 +9,8 @@ import (
 	"github.com/iami317/sx/pkg/result"
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/networkpolicy"
-	fileutil "github.com/projectdiscovery/utils/file"
-	sliceutil "github.com/projectdiscovery/utils/slice"
+	fileUtil "github.com/projectdiscovery/utils/file"
+	sliceUtil "github.com/projectdiscovery/utils/slice"
 	"github.com/projectdiscovery/utils/structs"
 
 	"github.com/projectdiscovery/goflags"
@@ -187,7 +187,7 @@ func ParseOptions() *Options {
 	}
 
 	if cfgFile != "" {
-		if !fileutil.FileExists(cfgFile) {
+		if !fileUtil.FileExists(cfgFile) {
 			gologger.Fatal().Msgf("given config file '%s' does not exist", cfgFile)
 		}
 		// merge config file with flags
@@ -197,7 +197,7 @@ func ParseOptions() *Options {
 	}
 
 	// Check if stdin pipe was given
-	options.Stdin = !options.DisableStdin && fileutil.HasStdin()
+	options.Stdin = !options.DisableStdin && fileUtil.HasStdin()
 
 	options.ResumeCfg = NewResumeCfg()
 	if options.ShouldLoadResume() {
@@ -228,7 +228,7 @@ func ParseOptions() *Options {
 
 // ShouldLoadResume resume file
 func (options *Options) ShouldLoadResume() bool {
-	return options.Resume && fileutil.FileExists(DefaultResumeFilePath())
+	return options.Resume && fileUtil.FileExists(DefaultResumeFilePath())
 }
 
 func (options *Options) shouldDiscoverHosts() bool {
@@ -246,11 +246,11 @@ func (options *Options) shouldUseRawPackets() bool {
 }
 
 func (options *Options) ShouldScanIPv4() bool {
-	return sliceutil.Contains(options.IPVersion, "4")
+	return sliceUtil.Contains(options.IPVersion, "4")
 }
 
 func (options *Options) ShouldScanIPv6() bool {
-	return sliceutil.Contains(options.IPVersion, "6")
+	return sliceUtil.Contains(options.IPVersion, "6")
 }
 
 func (options *Options) GetTimeout() time.Duration {

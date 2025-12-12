@@ -29,9 +29,9 @@ import (
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/networkpolicy"
 	"github.com/projectdiscovery/ratelimit"
-	fileutil "github.com/projectdiscovery/utils/file"
-	iputil "github.com/projectdiscovery/utils/ip"
-	sliceutil "github.com/projectdiscovery/utils/slice"
+	fileUtil "github.com/projectdiscovery/utils/file"
+	ipUtil "github.com/projectdiscovery/utils/ip"
+	sliceUtil "github.com/projectdiscovery/utils/slice"
 	"github.com/remeh/sizedwaitgroup"
 )
 
@@ -89,7 +89,7 @@ func NewRunner(options *Options) (*Runner, error) {
 	dnsOptions := dnsx.DefaultOptions
 	dnsOptions.MaxRetries = runner.options.Retries
 	dnsOptions.Hostsfile = true
-	if sliceutil.Contains(options.IPVersion, "6") {
+	if sliceUtil.Contains(options.IPVersion, "6") {
 		dnsOptions.QuestionTypes = append(dnsOptions.QuestionTypes, dns.TypeAAAA)
 	}
 	if len(runner.options.baseResolvers) > 0 {
@@ -175,7 +175,7 @@ func (r *Runner) onReceive(hostResult *result.HostResult) {
 			if otherName, _, err := net.SplitHostPort(string(dtOthers)); err == nil {
 				// replace bare ip:port with host
 				for idx, ipCandidate := range dt {
-					if iputil.IsIP(ipCandidate) {
+					if ipUtil.IsIP(ipCandidate) {
 						dt[idx] = otherName
 					}
 				}
@@ -476,12 +476,12 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 
 func (r *Runner) getHostDiscoveryIps() (ips []*net.IPNet, ipsWithPort []string) {
 	for ip := range r.scanner.HostDiscoveryResults.GetIPs() {
-		ips = append(ips, iputil.ToCidr(string(ip)))
+		ips = append(ips, ipUtil.ToCidr(string(ip)))
 	}
 
 	r.scanner.IPRanger.Hosts.Scan(func(ip, _ []byte) error {
 		// ips with port are ignored during host discovery phase
-		if cidr := iputil.ToCidr(string(ip)); cidr == nil {
+		if cidr := ipUtil.ToCidr(string(ip)); cidr == nil {
 			ipsWithPort = append(ipsWithPort, string(ip))
 		}
 		return nil
@@ -492,7 +492,7 @@ func (r *Runner) getHostDiscoveryIps() (ips []*net.IPNet, ipsWithPort []string) 
 
 func (r *Runner) getPreprocessedIps() (cidrs []*net.IPNet, ipsWithPort []string) {
 	r.scanner.IPRanger.Hosts.Scan(func(ip, _ []byte) error {
-		if cidr := iputil.ToCidr(string(ip)); cidr != nil {
+		if cidr := ipUtil.ToCidr(string(ip)); cidr != nil {
 			cidrs = append(cidrs, cidr)
 		} else {
 			ipsWithPort = append(ipsWithPort, string(ip))
@@ -738,9 +738,9 @@ func (r *Runner) SetSourceIP(sourceIP string) error {
 	}
 
 	switch {
-	case iputil.IsIPv4(sourceIP):
+	case ipUtil.IsIPv4(sourceIP):
 		r.scanner.ListenHandler.SourceIp4 = ip
-	case iputil.IsIPv6(sourceIP):
+	case ipUtil.IsIPv6(sourceIP):
 		r.scanner.ListenHandler.SourceIP6 = ip
 	default:
 		return errors.New("invalid ip type")
@@ -750,7 +750,7 @@ func (r *Runner) SetSourceIP(sourceIP string) error {
 }
 
 func (r *Runner) SetSourcePort(sourcePort string) error {
-	isValidPort := iputil.IsPort(sourcePort)
+	isValidPort := ipUtil.IsPort(sourcePort)
 	if !isValidPort {
 		return errors.New("invalid source port")
 	}
@@ -796,7 +796,7 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 
 		// create path if not existing
 		outputFolder := filepath.Dir(output)
-		if fileutil.FolderExists(outputFolder) {
+		if fileUtil.FolderExists(outputFolder) {
 			mkdirErr := os.MkdirAll(outputFolder, 0700)
 			if mkdirErr != nil {
 				gologger.Error().Msgf("Could not create output folder %s: %s\n", outputFolder, mkdirErr)
@@ -836,7 +836,7 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 					if otherName, _, err := net.SplitHostPort(string(dtOthers)); err == nil {
 						// replace bare ip:port with host
 						for idx, ipCandidate := range dt {
-							if iputil.IsIP(ipCandidate) {
+							if ipUtil.IsIP(ipCandidate) {
 								dt[idx] = otherName
 							}
 						}
@@ -986,10 +986,10 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 
 func ipMatchesIpVersions(ip string, ipVersions ...string) bool {
 	for _, ipVersion := range ipVersions {
-		if ipVersion == scan.IPv4 && iputil.IsIPv4(ip) {
+		if ipVersion == scan.IPv4 && ipUtil.IsIPv4(ip) {
 			return true
 		}
-		if ipVersion == scan.IPv6 && iputil.IsIPv6(ip) {
+		if ipVersion == scan.IPv6 && ipUtil.IsIPv6(ip) {
 			return true
 		}
 	}

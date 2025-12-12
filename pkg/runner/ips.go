@@ -3,8 +3,8 @@ package runner
 import (
 	"strings"
 
-	fileutil "github.com/projectdiscovery/utils/file"
-	iputil "github.com/projectdiscovery/utils/ip"
+	fileUtil "github.com/projectdiscovery/utils/file"
+	ipUtil "github.com/projectdiscovery/utils/ip"
 )
 
 func (r *Runner) parseExcludedIps(options *Options) ([]string, error) {
@@ -20,7 +20,7 @@ func (r *Runner) parseExcludedIps(options *Options) ([]string, error) {
 	}
 
 	if options.ExcludeIpsFile != "" {
-		cdata, err := fileutil.ReadFile(options.ExcludeIpsFile)
+		cdata, err := fileUtil.ReadFile(options.ExcludeIpsFile)
 		if err != nil {
 			return excludedIps, err
 		}
@@ -49,5 +49,5 @@ func (r *Runner) getExcludeItems(s string) ([]string, error) {
 }
 
 func isIpOrCidr(s string) bool {
-	return iputil.IsIP(s) || iputil.IsCIDR(s)
+	return ipUtil.IsIP(s) || ipUtil.IsCIDR(s)
 }

@@ -55,7 +55,13 @@ func showNetworkInterfaces() error {
 		for _, address := range addresses {
 			addrstr = append(addrstr, address.String())
 		}
-		gologger.Debug().Msgf("Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n", itf.Name, itf.HardwareAddr, strings.Join(addrstr, " "), itf.MTU, itf.Flags.String())
+		gologger.Debug().Msgf(
+			"Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n",
+			itf.Name,
+			itf.HardwareAddr,
+			strings.Join(addrstr, " "),
+			itf.MTU, itf.Flags.String(),
+		)
 	}
 	// External ip
 	externalIP, err := scan.WhatsMyIP()

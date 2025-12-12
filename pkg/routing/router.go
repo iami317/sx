@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	iputil "github.com/projectdiscovery/utils/ip"
+	ipUtil "github.com/projectdiscovery/utils/ip"
 )
 
 type RouteType string
@@ -81,9 +81,9 @@ func FindRouteForIp(ip net.IP, routes []*Route) (*Route, error) {
 	}
 
 	switch {
-	case iputil.IsIPv4(ip) && defaultRoute4 != nil:
+	case ipUtil.IsIPv4(ip) && defaultRoute4 != nil:
 		return defaultRoute4, nil
-	case iputil.IsIPv6(ip) && defaultRoute6 != nil:
+	case ipUtil.IsIPv6(ip) && defaultRoute6 != nil:
 		return defaultRoute6, nil
 	}
 
@@ -102,9 +102,9 @@ func FindSourceIpForIp(route *Route, ip net.IP) (net.IP, error) {
 		}
 		ipAddress := ipNet.IP
 		switch {
-		case iputil.IsIPv4(ip, ipAddress):
+		case ipUtil.IsIPv4(ip, ipAddress):
 			return ipAddress, nil
-		case iputil.IsIPv6(ip, ipAddress) && !ipAddress.IsLinkLocalUnicast(): // link local unicast are not routeable
+		case ipUtil.IsIPv6(ip, ipAddress) && !ipAddress.IsLinkLocalUnicast(): // link local unicast are not routeable
 			return ipAddress, nil
 		}
 	}
@@ -114,13 +114,13 @@ func FindSourceIpForIp(route *Route, ip net.IP) (net.IP, error) {
 
 func GetOutboundIPs() (net.IP, net.IP, error) {
 	// collect default outbound ipv4 and ipv6
-	srcIPv4, err := iputil.GetSourceIP("128.199.158.128") // scanme.sh
+	srcIPv4, err := ipUtil.GetSourceIP("128.199.158.128") // scanme.sh
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "couldn't determine ipv4 routing interface")
 	}
 
 	// ignores errors on ipv6 routing
-	srcIPv6, err := iputil.GetSourceIP("2400:6180:0:d0::91:1001") // scanme.sh
+	srcIPv6, err := ipUtil.GetSourceIP("2400:6180:0:d0::91:1001") // scanme.sh
 	if err != nil {
 		return srcIPv4, nil, errors.Wrap(err, "couldn't determine ipv6 routing interface")
 	}
@@ -175,9 +175,9 @@ func FindInterfaceByIp(ip net.IP) (*net.Interface, error) {
 			}
 			// double check if they belongs to the same family as go standard library is faulty
 			switch {
-			case iputil.IsIPv4(ip, ipAddress):
+			case ipUtil.IsIPv4(ip, ipAddress):
 				return &itf, nil
-			case iputil.IsIPv6(ip, ipAddress):
+			case ipUtil.IsIPv6(ip, ipAddress):
 				return &itf, nil
 			}
 		}

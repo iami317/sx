@@ -263,7 +263,7 @@ func writeCSVHeaders(data *Result, writer *csv.Writer, excludedFields []string) 
 	}
 
 	if err := writer.Write(headers); err != nil {
-		errMsg := errors.Wrap(err, "Could not write headers")
+		errMsg := errors.Wrap(err, "could not write headers")
 		gologger.Error().Msg(errMsg.Error())
 	}
 }

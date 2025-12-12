@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/projectdiscovery/gologger"
-	fileutil "github.com/projectdiscovery/utils/file"
-	permissionutil "github.com/projectdiscovery/utils/permission"
+	fileUtil "github.com/projectdiscovery/utils/file"
+	permissionUtil "github.com/projectdiscovery/utils/permission"
 )
 
 // Default resume file
@@ -51,11 +51,11 @@ func (resumeCfg *ResumeCfg) SaveResumeConfig() error {
 		return err
 	}
 	resumeFolderPath := DefaultResumeFolderPath()
-	if !fileutil.FolderExists(resumeFolderPath) {
-		_ = fileutil.CreateFolder(DefaultResumeFolderPath())
+	if !fileUtil.FolderExists(resumeFolderPath) {
+		_ = fileUtil.CreateFolder(DefaultResumeFolderPath())
 	}
 
-	return os.WriteFile(DefaultResumeFilePath(), data, permissionutil.ConfigFilePermission)
+	return os.WriteFile(DefaultResumeFilePath(), data, permissionUtil.ConfigFilePermission)
 }
 
 // ConfigureResume read the resume config file
@@ -82,7 +82,7 @@ func (resumeCfg *ResumeCfg) ShouldSaveResume() bool {
 
 // CleanupResumeConfig cleaning up the config file
 func (resumeCfg *ResumeCfg) CleanupResumeConfig() {
-	if fileutil.FileExists(DefaultResumeFilePath()) {
+	if fileUtil.FileExists(DefaultResumeFilePath()) {
 		_ = os.Remove(DefaultResumeFilePath())
 	}
 }

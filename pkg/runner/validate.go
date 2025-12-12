@@ -12,10 +12,10 @@ import (
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/utils/errkit"
-	fileutil "github.com/projectdiscovery/utils/file"
-	iputil "github.com/projectdiscovery/utils/ip"
-	osutil "github.com/projectdiscovery/utils/os"
-	sliceutil "github.com/projectdiscovery/utils/slice"
+	fileUtil "github.com/projectdiscovery/utils/file"
+	ipUtil "github.com/projectdiscovery/utils/ip"
+	osUtil "github.com/projectdiscovery/utils/os"
+	sliceUtil "github.com/projectdiscovery/utils/slice"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
@@ -66,8 +66,8 @@ func (options *Options) ValidateOptions() error {
 		}
 	}
 
-	if fileutil.FileExists(options.Resolvers) {
-		chanResolvers, err := fileutil.ReadFile(options.Resolvers)
+	if fileUtil.FileExists(options.Resolvers) {
+		chanResolvers, err := fileUtil.ReadFile(options.Resolvers)
 		if err != nil {
 			return err
 		}
@@ -87,7 +87,7 @@ func (options *Options) ValidateOptions() error {
 
 	// Parse and validate source ip and source port
 	// checks if source ip is ip only
-	isOnlyIP := iputil.IsIP(options.SourceIP)
+	isOnlyIP := ipUtil.IsIP(options.SourceIP)
 	if options.SourceIP != "" && !isOnlyIP {
 		ip, port, err := net.SplitHostPort(options.SourceIP)
 		if err != nil {
@@ -97,7 +97,7 @@ func (options *Options) ValidateOptions() error {
 		options.SourcePort = port
 	}
 
-	if len(options.IPVersion) > 0 && !sliceutil.ContainsItems([]string{scan.IPv4, scan.IPv6}, options.IPVersion) {
+	if len(options.IPVersion) > 0 && !sliceUtil.ContainsItems([]string{scan.IPv4, scan.IPv6}, options.IPVersion) {
 		return errors.New("IP Version must be 4 and/or 6")
 	}
 	// Return error if any host discovery releated option is provided but host discovery is disabled
@@ -107,7 +107,7 @@ func (options *Options) ValidateOptions() error {
 
 	// Host Discovery mode needs provileged access
 	if options.OnlyHostDiscovery && !privileges.IsPrivileged {
-		if osutil.IsWindows() {
+		if osUtil.IsWindows() {
 			return errors.New("host discovery not (yet) supported on windows")
 		}
 		return errors.New("sudo access required to perform host discovery")

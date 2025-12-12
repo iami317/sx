@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	readerUtil "github.com/projectdiscovery/utils/reader"
 	"io"
 	"net"
 	"os"
@@ -13,8 +14,7 @@ import (
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/mapcidr/asn"
-	iputil "github.com/projectdiscovery/utils/ip"
-	readerutil "github.com/projectdiscovery/utils/reader"
+	ipUtil "github.com/projectdiscovery/utils/ip"
 	"github.com/remeh/sizedwaitgroup"
 )
 
@@ -74,7 +74,7 @@ func (r *Runner) mergeToFile() (string, error) {
 
 	// targets from STDIN
 	if r.options.Stdin {
-		timeoutReader := readerutil.TimeoutReader{Reader: os.Stdin, Timeout: r.options.InputReadTimeout}
+		timeoutReader := readerUtil.TimeoutReader{Reader: os.Stdin, Timeout: r.options.InputReadTimeout}
 		if _, err := io.Copy(tempInput, timeoutReader); err != nil {
 			return "", err
 		}
@@ -133,13 +133,13 @@ func (r *Runner) AddTarget(target string) error {
 		}
 		return nil
 	}
-	if iputil.IsCIDR(target) {
+	if ipUtil.IsCIDR(target) {
 		if err := r.scanner.IPRanger.AddHostWithMetadata(target, "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
 			gologger.Warning().Msgf("%s\n", err)
 		}
 		return nil
 	}
-	if iputil.IsIP(target) && !r.scanner.IPRanger.Contains(target) {
+	if ipUtil.IsIP(target) && !r.scanner.IPRanger.Contains(target) {
 		ip := net.ParseIP(target)
 		// convert ip4 expressed as ip6 back to ip4
 		if ip.To4() != nil {
@@ -147,7 +147,7 @@ func (r *Runner) AddTarget(target string) error {
 		}
 		metadata := "ip"
 		if r.options.ReversePTR {
-			names, err := iputil.ToFQDN(target)
+			names, err := ipUtil.ToFQDN(target)
 			if err != nil {
 				gologger.Debug().Msgf("reverse ptr failed for %s: %s\n", target, err)
 			} else {

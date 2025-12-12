@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/gologger"
-	iputil "github.com/projectdiscovery/utils/ip"
+	ipUtil "github.com/projectdiscovery/utils/ip"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
@@ -90,11 +90,11 @@ func PingIcmpEchoRequestAsync(ip string) {
 
 	var packetListener net.PacketConn
 	switch {
-	case iputil.IsIPv4(ip):
+	case ipUtil.IsIPv4(ip):
 		m.Type = ipv4.ICMPTypeEcho
 		packetListener = icmpConn4
 		destAddr = &net.IPAddr{IP: destinationIP}
-	case iputil.IsIPv6(ip):
+	case ipUtil.IsIPv6(ip):
 		m.Type = ipv6.ICMPTypeEchoRequest
 		packetListener = icmpConn6
 		networkInterface, _, _, err := PkgRouter.Route(destinationIP)
@@ -178,7 +178,7 @@ func PingIcmpTimestampRequest(ip string, timeout time.Duration) bool {
 
 // PingIcmpTimestampRequestAsync synchronous to the target ip address - ipv4 only
 func PingIcmpTimestampRequestAsync(ip string) {
-	if !iputil.IsIPv4(ip) {
+	if !ipUtil.IsIPv4(ip) {
 		return
 	}
 	if icmpConn4 == nil {
@@ -268,7 +268,7 @@ func ParseTimestamp(_ int, b []byte) (icmp.MessageBody, error) {
 
 // PingIcmpAddressMaskRequestAsync asynchronous to the target ip address - ipv4 only
 func PingIcmpAddressMaskRequestAsync(ip string) {
-	if !iputil.IsIPv4(ip) {
+	if !ipUtil.IsIPv4(ip) {
 		return
 	}
 	if icmpConn4 == nil {

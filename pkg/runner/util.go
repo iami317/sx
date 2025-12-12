@@ -6,25 +6,25 @@ import (
 
 	"github.com/iami317/sx/pkg/scan"
 	"github.com/projectdiscovery/gologger"
-	iputil "github.com/projectdiscovery/utils/ip"
-	osutil "github.com/projectdiscovery/utils/os"
-	sliceutil "github.com/projectdiscovery/utils/slice"
+	ipUtil "github.com/projectdiscovery/utils/ip"
+	osUtil "github.com/projectdiscovery/utils/os"
+	sliceUtil "github.com/projectdiscovery/utils/slice"
 )
 
 func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []string, err error) {
 	// If the host is a Domain, then perform resolution and discover all IP
 	// addresses for a given host. Else use that host for port scanning
-	if !iputil.IsIP(target) {
+	if !ipUtil.IsIP(target) {
 		dnsData, err := r.dnsclient.QueryMultiple(target)
 		if err != nil || dnsData == nil {
 			gologger.Warning().Msgf("could not get IP for host: %s\n", target)
 			return nil, nil, err
 		}
 		if len(r.options.IPVersion) > 0 {
-			if sliceutil.Contains(r.options.IPVersion, scan.IPv4) {
+			if sliceUtil.Contains(r.options.IPVersion, scan.IPv4) {
 				targetIPsV4 = append(targetIPsV4, dnsData.A...)
 			}
-			if sliceutil.Contains(r.options.IPVersion, scan.IPv6) {
+			if sliceUtil.Contains(r.options.IPVersion, scan.IPv6) {
 				targetIPsV6 = append(targetIPsV6, dnsData.AAAA...)
 			}
 		} else {
@@ -42,12 +42,12 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 }
 
 func isOSSupported() bool {
-	return osutil.IsLinux() || osutil.IsOSX()
+	return osUtil.IsLinux() || osUtil.IsOSX()
 }
 
 func getPort(target string) (string, string, bool) {
 	host, port, err := net.SplitHostPort(target)
-	if err == nil && iputil.IsPort(port) {
+	if err == nil && ipUtil.IsPort(port) {
 		return host, port, true
 	}
 

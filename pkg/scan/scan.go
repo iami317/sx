@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	netUtil "github.com/projectdiscovery/utils/net"
 	"io"
 	"net"
 	"os"
@@ -19,8 +20,7 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/networkpolicy"
-	envutil "github.com/projectdiscovery/utils/env"
-	netutil "github.com/projectdiscovery/utils/net"
+	envUtil "github.com/projectdiscovery/utils/env"
 	"golang.org/x/net/proxy"
 )
 
@@ -115,7 +115,7 @@ type PkgResult struct {
 var (
 	pingIcmpEchoRequestCallback      func(ip string, timeout time.Duration) bool              //nolint
 	pingIcmpTimestampRequestCallback func(ip string, timeout time.Duration) bool              //nolint
-	EnableTLSDetection               = envutil.GetEnvOrDefault("ENABLE_TLS_DETECTION", false) // Enable TLS detection for connect scans
+	EnableTLSDetection               = envUtil.GetEnvOrDefault("ENABLE_TLS_DETECTION", false) // Enable TLS detection for connect scans
 )
 
 // NewScanner creates a new full port scanner that scans all ports using SYN packets.
@@ -446,7 +446,7 @@ func (s *Scanner) ConnectPort(host, payload string, p *port.Port, timeout time.D
 		// Perform TLS detection for TCP connections if enabled
 		if EnableTLSDetection {
 			//nolint
-			p.TLS = netutil.DetectTLS(conn, host, timeout)
+			p.TLS = netUtil.DetectTLS(conn, host, timeout)
 		}
 	}
 

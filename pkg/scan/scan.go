@@ -32,8 +32,8 @@ const (
 	sendDelayMsec  = 10
 	chanSize       = 1000  //nolint
 	packetSendSize = 2500  //nolint
-	snaplen        = 65536 //nolint
-	readtimeout    = 1500  //nolint
+	snapLen        = 65536 //nolint
+	readTimeout    = 1500  //nolint
 )
 
 const (
@@ -256,7 +256,7 @@ func (s *Scanner) ICMPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.HostDiscoveryChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Debugf("received ICMP response from %s", ip.ipv4)
+				logx.Verbosef("received ICMP response from %s", ip.ipv4)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -324,12 +324,12 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s", ip.ipv4, ip.ipv6)
+				logx.Verbosef("discarding Transport packet from non target ips: ip4=%s ip6=%s", ip.ipv4, ip.ipv6)
 				continue
 			}
 
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				logx.Debugf("received UDP probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Verbosef("received UDP probe response from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -337,7 +337,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				logx.Debugf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Verbosef("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -390,7 +390,7 @@ func GetInterfaceFromIP(ip net.IP) (*net.Interface, error) {
 
 // ConnectPort a single host and port
 func (s *Scanner) ConnectPort(host, payload string, p *port.Port, timeout time.Duration) (bool, error) {
-	hostport := net.JoinHostPort(host, fmt.Sprint(p.Port))
+	hostPort := net.JoinHostPort(host, fmt.Sprint(p.Port))
 	var (
 		err  error
 		conn net.Conn
@@ -402,7 +402,7 @@ func (s *Scanner) ConnectPort(host, payload string, p *port.Port, timeout time.D
 		if !ok {
 			return false, errors.New("invalid proxy dialer")
 		}
-		conn, err = proxyDialer.DialContext(ctx, p.Protocol.String(), hostport)
+		conn, err = proxyDialer.DialContext(ctx, p.Protocol.String(), hostPort)
 		if err != nil {
 			return false, err
 		}
@@ -415,7 +415,7 @@ func (s *Scanner) ConnectPort(host, payload string, p *port.Port, timeout time.D
 		} else if s.ListenHandler.SourceIP6 != nil {
 			netDialer.LocalAddr = &net.TCPAddr{IP: s.ListenHandler.SourceIP6}
 		}
-		conn, err = netDialer.Dial(p.Protocol.String(), hostport)
+		conn, err = netDialer.Dial(p.Protocol.String(), hostPort)
 	}
 	if err != nil {
 		return false, err

@@ -82,6 +82,7 @@ func init() {
 	go TransportReadWorker()
 	go TransportWriteWorker()
 	go ICMPWriteWorker()
+	go EthernetWriteWorker()
 }
 
 func buildListenHandler() (*ListenHandler, error) {
@@ -145,7 +146,7 @@ func EthernetWriteWorker() {
 	}
 }
 
-// TCPWriteWorker that sends out TCP|UDP packets
+// TransportWriteWorker that sends out TCP|UDP packets
 func TransportWriteWorker() {
 	for pkg := range transportPacketSend {
 		SendAsyncPkg(pkg.ListenHandler, pkg.ip, pkg.port, pkg.flag)
@@ -556,6 +557,7 @@ func (l *ListenHandler) UdpReadWorker4() {
 		_, _, _ = l.UdpConn4.ReadFrom(data)
 	}
 }
+
 func (l *ListenHandler) UdpReadWorker6() {
 	if l.UdpConn6 == nil {
 		return
@@ -574,12 +576,12 @@ func SetupHandlerUnix(interfaceName, bpfFilter string, protocols ...protocol.Pro
 			return err
 		}
 
-		err = inactive.SetSnapLen(snaplen)
+		err = inactive.SetSnapLen(snapLen)
 		if err != nil {
 			return err
 		}
 
-		readTimeout := time.Duration(readtimeout) * time.Millisecond
+		readTimeout := time.Duration(readTimeout) * time.Millisecond
 		if err = inactive.SetTimeout(readTimeout); err != nil {
 			CleanupHandlersUnix()
 			return err
@@ -823,7 +825,7 @@ func TransportReadWorker() {
 	wgread.Wait()
 }
 
-// CleanupHandlers for all interfaces
+// CleanupHandlersUnix for all interfaces
 func CleanupHandlersUnix() {
 	allActive := append(handlers.TransportActive, handlers.EthernetActive...)
 	allActive = append(allActive, handlers.LoopbackHandlers...)

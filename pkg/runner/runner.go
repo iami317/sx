@@ -931,7 +931,7 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 					host = hostIP
 				}
 				isCDNIP, cdnName, _ := r.scanner.CdnCheck(hostIP)
-				logx.Infof("Found alive host %s (%s)", host, hostIP)
+				logx.Debugf("Found alive host %s (%s)", host, hostIP)
 				// console output
 				var macAddress string
 				if parsedIP := net.ParseIP(hostIP); parsedIP != nil && parsedIP.IsPrivate() {
@@ -971,7 +971,7 @@ func (r *Runner) handleOutput(scanResults *result.Result) {
 						err = WriteHostOutput(host, nil, r.options.OutputCDN, cdnName, file)
 					}
 					if err != nil {
-						logx.Errorf("Could not write results to file %s for %s: %s", output, host, err)
+						logx.Errorf("could not write results to file %s for %s: %s", output, host, err)
 					}
 				}
 

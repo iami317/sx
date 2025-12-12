@@ -6,14 +6,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/iami317/logx"
 	"net"
 	"os/exec"
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/projectdiscovery/gologger"
-	sliceutil "github.com/projectdiscovery/utils/slice"
-	stringsutil "github.com/projectdiscovery/utils/strings"
+	sliceUtil "github.com/projectdiscovery/utils/slice"
+	stringsUtil "github.com/projectdiscovery/utils/strings"
 	"go.uber.org/multierr"
 )
 
@@ -74,15 +74,15 @@ func New() (Router, error) {
 			continue
 		}
 
-		parts := stringsutil.SplitAny(outputLine, " \t")
-		if len(parts) >= 4 && !sliceutil.Contains(parts, "Destination") {
+		parts := stringsUtil.SplitAny(outputLine, " \t")
+		if len(parts) >= 4 && !sliceUtil.Contains(parts, "Destination") {
 			expire := "-1"
 			if len(parts) > 4 {
 				expire = parts[4]
 			}
 
 			route := &Route{
-				Default:     stringsutil.EqualFoldAny(parts[0], "default"),
+				Default:     stringsUtil.EqualFoldAny(parts[0], "default"),
 				Destination: parts[0],
 				Gateway:     parts[1],
 				Flags:       parts[2],
@@ -93,8 +93,8 @@ func New() (Router, error) {
 				route.NetworkInterface = networkInterface
 			}
 
-			hasDots := stringsutil.ContainsAny(route.Destination, ".") || stringsutil.ContainsAny(route.Gateway, ".")
-			hasSemicolon := stringsutil.ContainsAny(route.Destination, ":") || stringsutil.ContainsAny(route.Gateway, ":")
+			hasDots := stringsUtil.ContainsAny(route.Destination, ".") || stringsUtil.ContainsAny(route.Gateway, ".")
+			hasSemicolon := stringsUtil.ContainsAny(route.Destination, ":") || stringsUtil.ContainsAny(route.Gateway, ":")
 			switch {
 			case hasDots:
 				route.Type = IPv4
@@ -103,7 +103,7 @@ func New() (Router, error) {
 			default:
 				// use last route type and print a warning
 				if lastType != "" {
-					gologger.Debug().Msgf("using '%s' for unknown route type: '%s'\n", lastType, outputLine)
+					logx.Debugf("using '%s' for unknown route type: '%s'\n", lastType, outputLine)
 					route.Type = lastType
 				} else {
 					// we can't determine the route type

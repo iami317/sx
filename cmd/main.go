@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"github.com/iami317/logx"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/iami317/sx/pkg/runner"
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
-	"github.com/projectdiscovery/gologger"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	options := runner.ParseOptions()
 	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
-		gologger.Fatal().Msgf("could not create runner: %s\n", err)
+		logx.Fatalf("could not create runner: %s\n", err)
 	}
 
 	// Setup context with cancelation
@@ -27,16 +27,16 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-c
-		gologger.Info().Msgf("received signal: %s, exiting gracefully...\n", sig)
+		logx.Infof("received signal: %s, exiting gracefully...\n", sig)
 
 		// Cancel context to stop ongoing tasks
 		cancel()
 
 		// Try to save resume config if needed
 		if options.ResumeCfg != nil && options.ResumeCfg.ShouldSaveResume() {
-			gologger.Info().Msgf("creating resume file: %s\n", runner.DefaultResumeFilePath())
+			logx.Infof("creating resume file: %s\n", runner.DefaultResumeFilePath())
 			if err := options.ResumeCfg.SaveResumeConfig(); err != nil {
-				gologger.Error().Msgf("couldn't create resume file: %s\n", err)
+				logx.Errorf("couldn't create resume file: %s\n", err)
 			}
 		}
 
@@ -45,24 +45,21 @@ func main() {
 			sxRunner.ShowScanResultOnExit()
 
 			if err := sxRunner.Close(); err != nil {
-				gologger.Error().Msgf("couldn't close runner: %s\n", err)
+				logx.Errorf("couldn't close runner: %s\n", err)
 			}
 		}
-
-		// Final flush if gologger has a Close method (placeholder if exists)
-		// Example: gologger.Close()
 
 		os.Exit(1)
 	}()
 
 	// Start enumeration
 	if err := sxRunner.RunEnumeration(ctx); err != nil {
-		gologger.Fatal().Msgf("could not run enumeration: %s\n", err)
+		logx.Fatalf("could not run enumeration: %s\n", err)
 	}
 
 	defer func() {
 		if err := sxRunner.Close(); err != nil {
-			gologger.Error().Msgf("Couldn't close runner: %s\n", err)
+			logx.Errorf("couldn't close runner: %s\n", err)
 		}
 		// On successful execution, cleanup resume config if needed
 		if options.ResumeCfg != nil {

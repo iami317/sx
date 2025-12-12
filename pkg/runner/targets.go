@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/iami317/logx"
 	readerUtil "github.com/projectdiscovery/utils/reader"
 	"io"
 	"net"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/scan"
-	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/mapcidr/asn"
 	ipUtil "github.com/projectdiscovery/utils/ip"
 	"github.com/remeh/sizedwaitgroup"
@@ -31,7 +31,7 @@ func (r *Runner) Load() error {
 	// pre-process all targets (resolves all non fqdn targets to ip address)
 	err = r.PreProcessTargets()
 	if err != nil {
-		gologger.Warning().Msgf("%s\n", err)
+		logx.Warnf("%s\n", err)
 	}
 
 	return nil
@@ -45,7 +45,7 @@ func (r *Runner) mergeToFile() (string, error) {
 	}
 	defer func() {
 		if err := tempInput.Close(); err != nil {
-			gologger.Error().Msgf("could not close temp input: %s\n", err)
+			logx.Errorf("could not close temp input: %s\n", err)
 		}
 	}()
 
@@ -64,7 +64,7 @@ func (r *Runner) mergeToFile() (string, error) {
 		}
 		defer func() {
 			if err := f.Close(); err != nil {
-				gologger.Error().Msgf("could not close file %s: %s\n", r.options.HostsFile, err)
+				logx.Errorf("could not close file %s: %s\n", r.options.HostsFile, err)
 			}
 		}()
 		if _, err := io.Copy(tempInput, f); err != nil {
@@ -97,7 +97,7 @@ func (r *Runner) PreProcessTargets() error {
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			gologger.Error().Msgf("could not close file %s: %s\n", r.targetsFile, err)
+			logx.Errorf("could not close file %s: %s\n", r.targetsFile, err)
 		}
 	}()
 	s := bufio.NewScanner(f)
@@ -106,7 +106,7 @@ func (r *Runner) PreProcessTargets() error {
 		go func(target string) {
 			defer wg.Done()
 			if err := r.AddTarget(target); err != nil {
-				gologger.Warning().Msgf("%s\n", err)
+				logx.Warnf("%s\n", err)
 			}
 		}(s.Text())
 	}
@@ -128,14 +128,14 @@ func (r *Runner) AddTarget(target string) error {
 		}
 		for _, cidr := range cidrs {
 			if err := r.scanner.IPRanger.AddHostWithMetadata(cidr.String(), "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
-				gologger.Warning().Msgf("%s\n", err)
+				logx.Warnf("%s\n", err)
 			}
 		}
 		return nil
 	}
 	if ipUtil.IsCIDR(target) {
 		if err := r.scanner.IPRanger.AddHostWithMetadata(target, "cidr"); err != nil { // Add cidr directly to ranger, as single ips would allocate more resources later
-			gologger.Warning().Msgf("%s\n", err)
+			logx.Warnf("%s\n", err)
 		}
 		return nil
 	}
@@ -149,14 +149,14 @@ func (r *Runner) AddTarget(target string) error {
 		if r.options.ReversePTR {
 			names, err := ipUtil.ToFQDN(target)
 			if err != nil {
-				gologger.Debug().Msgf("reverse ptr failed for %s: %s\n", target, err)
+				logx.Debugf("reverse ptr failed for %s: %s\n", target, err)
 			} else {
 				metadata = strings.Trim(names[0], ".")
 			}
 		}
 		err := r.scanner.IPRanger.AddHostWithMetadata(target, metadata)
 		if err != nil {
-			gologger.Warning().Msgf("%s\n", err)
+			logx.Warnf("%s\n", err)
 		}
 		return nil
 	}
@@ -176,15 +176,15 @@ func (r *Runner) AddTarget(target string) error {
 		if hasPort {
 			if len(r.options.Ports) > 0 {
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, ""), target); err != nil {
-					gologger.Warning().Msgf("%s\n", err)
+					logx.Warnf("%s\n", err)
 				}
 			} else {
 				if err := r.scanner.IPRanger.AddHostWithMetadata(joinHostPort(ip, port), target); err != nil {
-					gologger.Warning().Msgf("%s\n", err)
+					logx.Warnf("%s\n", err)
 				}
 			}
 		} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
-			gologger.Warning().Msgf("%s\n", err)
+			logx.Warnf("%s\n", err)
 		}
 	}
 
@@ -212,7 +212,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	)
 	for _, ip := range ipsV4 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			gologger.Warning().Msgf("skipping host %s as ip %s was excluded\n", target, ip)
+			logx.Warnf("skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -220,7 +220,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	}
 	for _, ip := range ipsV6 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			gologger.Warning().Msgf("skipping host %s as ip %s was excluded\n", target, ip)
+			logx.Warnf("skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -235,24 +235,24 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 		// Scan the hosts found for ping probes
 		pingResults, err := scan.PingHosts(initialHosts)
 		if err != nil {
-			gologger.Warning().Msgf("could not perform ping scan on %s: %s\n", target, err)
+			logx.Warnf("could not perform ping scan on %s: %s\n", target, err)
 			return []string{}, err
 		}
 		for _, result := range pingResults.Hosts {
 			if result.Type == scan.HostActive {
-				gologger.Debug().Msgf("ping probe succeed for %s: latency=%s\n", result.Host, result.Latency)
+				logx.Debugf("ping probe succeed for %s: latency=%s\n", result.Host, result.Latency)
 			} else {
-				gologger.Debug().Msgf("ping probe failed for %s: error=%s\n", result.Host, result.Error)
+				logx.Debugf("ping probe failed for %s: error=%s\n", result.Host, result.Error)
 			}
 		}
 
 		// Get the fastest host in the list of hosts
 		fastestHost, err := pingResults.GetFastestHost()
 		if err != nil {
-			gologger.Warning().Msgf("no active host found for %s: %s\n", target, err)
+			logx.Warnf("no active host found for %s: %s\n", target, err)
 			return []string{}, err
 		}
-		gologger.Info().Msgf("fastest host found for target: %s (%s)\n", fastestHost.Host, fastestHost.Latency)
+		logx.Infof("fastest host found for target: %s (%s)\n", fastestHost.Host, fastestHost.Latency)
 		hostIPS = append(hostIPS, fastestHost.Host)
 	} else if r.options.ScanAllIPS {
 		hostIPS = append(initialHosts, initialHostsV6...)
@@ -267,7 +267,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 
 	for _, hostIP := range hostIPS {
 		if r.scanner.IPRanger.Contains(hostIP) {
-			gologger.Debug().Msgf("using ip %s for host %s enumeration\n", hostIP, target)
+			logx.Debugf("using ip %s for host %s enumeration\n", hostIP, target)
 		}
 	}
 

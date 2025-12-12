@@ -3,6 +3,7 @@ package runner
 import (
 	"flag"
 	"fmt"
+	"github.com/iami317/logx"
 	"net"
 	"strings"
 
@@ -16,9 +17,6 @@ import (
 	ipUtil "github.com/projectdiscovery/utils/ip"
 	osUtil "github.com/projectdiscovery/utils/os"
 	sliceUtil "github.com/projectdiscovery/utils/slice"
-
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/gologger/levels"
 )
 
 var (
@@ -37,7 +35,7 @@ func (options *Options) ValidateOptions() error {
 	}
 
 	if (options.WithHostDiscovery || options.OnlyHostDiscovery) && options.ScanType != SynScan {
-		gologger.Warning().Msgf("host discovery requires syn scan, automatically switching to syn scan")
+		logx.Warnf("host discovery requires syn scan, automatically switching to syn scan")
 		options.ScanType = SynScan
 	}
 
@@ -118,7 +116,7 @@ func (options *Options) ValidateOptions() error {
 	}
 
 	if options.Proxy != "" && options.ScanType == SynScan {
-		gologger.Warning().Msgf("syn Scan can't be used with socks proxy: falling back to connect scan")
+		logx.Warnf("syn Scan can't be used with socks proxy: falling back to connect scan")
 		options.ScanType = ConnectScan
 	}
 
@@ -127,12 +125,12 @@ func (options *Options) ValidateOptions() error {
 	}
 
 	if options.ScanType == SynScan && scan.PkgRouter == nil {
-		gologger.Warning().Msgf("routing could not be determined (are you using a VPN?).falling back to connect scan")
+		logx.Warnf("routing could not be determined (are you using a VPN?).falling back to connect scan")
 		options.ScanType = ConnectScan
 	}
 
 	if options.WarmUpTime <= 0 {
-		gologger.Debug().Msgf("warm up time must be greater than 0, setting to 2")
+		logx.Debugf("warm up time must be greater than 0, setting to 2")
 		options.WarmUpTime = 2
 	}
 
@@ -142,14 +140,14 @@ func (options *Options) ValidateOptions() error {
 // configureOutput configures the output on the screen
 func (options *Options) configureOutput() {
 	if options.Verbose {
-		gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
+		logx.SetLevel("verbose")
 	}
 	if options.Debug {
-		gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
+		logx.SetLevel("debug")
 	}
 
 	if options.Silent {
-		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
+		logx.SetLevel("silent")
 	}
 }
 
@@ -158,7 +156,7 @@ func (options *Options) configureOutput() {
 func (options *Options) configureHostDiscovery(ports []*port.Port) {
 	// if less than two ports are specified as input, reduce time and scan directly
 	if len(ports) <= 2 {
-		gologger.Info().Msgf("host discovery disabled: less than two ports were specified")
+		logx.Infof("host discovery disabled: less than two ports were specified")
 		options.WithHostDiscovery = false
 	}
 	if options.shouldDiscoverHosts() && !options.hasProbes() {

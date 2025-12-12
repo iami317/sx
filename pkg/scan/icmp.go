@@ -5,11 +5,11 @@ package scan
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/iami317/logx"
 	"net"
 	"os"
 	"time"
 
-	"github.com/projectdiscovery/gologger"
 	ipUtil "github.com/projectdiscovery/utils/ip"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
@@ -102,7 +102,7 @@ func PingIcmpEchoRequestAsync(ip string) {
 			err = fmt.Errorf("could not send ICMP Echo Request packet to %s: no interface with outbout source ipv6 found", destinationIP)
 		}
 		if err != nil {
-			gologger.Debug().Msgf("%s\n", err)
+			logx.Debugf("%s\n", err)
 			return
 		}
 		destAddr = &net.UDPAddr{IP: destinationIP, Zone: networkInterface.Name}

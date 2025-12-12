@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/iami317/logx"
 	"os"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/projectdiscovery/utils/structs"
 
 	"github.com/projectdiscovery/goflags"
-	"github.com/projectdiscovery/gologger"
 )
 
 // Options contains the configuration options for tuning
@@ -178,7 +178,7 @@ func ParseOptions() *Options {
 	if options.ListOutputFields {
 		fields, err := structs.GetStructFields(Result{})
 		if err != nil {
-			gologger.Fatal().Msgf("could not get struct fields: %s\n", err)
+			logx.Fatalf("could not get struct fields: %s\n", err)
 		}
 		for _, field := range fields {
 			fmt.Println(field)
@@ -188,11 +188,11 @@ func ParseOptions() *Options {
 
 	if cfgFile != "" {
 		if !fileUtil.FileExists(cfgFile) {
-			gologger.Fatal().Msgf("given config file '%s' does not exist", cfgFile)
+			logx.Fatalf("given config file '%s' does not exist", cfgFile)
 		}
 		// merge config file with flags
 		if err := flagSet.MergeConfigFile(cfgFile); err != nil {
-			gologger.Fatal().Msgf("could not read config: %s\n", err)
+			logx.Fatalf("could not read config: %s\n", err)
 		}
 	}
 
@@ -202,7 +202,7 @@ func ParseOptions() *Options {
 	options.ResumeCfg = NewResumeCfg()
 	if options.ShouldLoadResume() {
 		if err := options.ResumeCfg.ConfigureResume(); err != nil {
-			gologger.Fatal().Msgf("%s\n", err)
+			logx.Fatalf("%s\n", err)
 		}
 	}
 	options.configureOutput()
@@ -211,7 +211,7 @@ func ParseOptions() *Options {
 	if options.InterfacesList {
 		err := showNetworkInterfaces()
 		if err != nil {
-			gologger.Error().Msgf("could not get network interfaces: %s\n", err)
+			logx.Errorf("could not get network interfaces: %s\n", err)
 		}
 		os.Exit(0)
 	}
@@ -220,7 +220,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err := options.ValidateOptions()
 	if err != nil {
-		gologger.Fatal().Msgf("program exiting: %s\n", err)
+		logx.Fatalf("program exiting: %s\n", err)
 	}
 
 	return options

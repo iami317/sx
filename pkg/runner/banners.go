@@ -1,13 +1,13 @@
 package runner
 
 import (
+	"github.com/iami317/logx"
 	"net"
 	"strings"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/scan"
-	"github.com/projectdiscovery/gologger"
-	osutil "github.com/projectdiscovery/utils/os"
+	osUtil "github.com/projectdiscovery/utils/os"
 )
 
 // showNetworkCapabilities shows the network capabilities/scan types possible with the running user
@@ -17,7 +17,7 @@ func showNetworkCapabilities(options *Options) {
 	switch {
 	case privileges.IsPrivileged && options.ScanType == SynScan:
 		accessLevel = "root"
-		if osutil.IsLinux() {
+		if osUtil.IsLinux() {
 			accessLevel = "CAP_NET_RAW"
 		}
 		scanType = "SYN"
@@ -29,14 +29,14 @@ func showNetworkCapabilities(options *Options) {
 	switch {
 	case options.OnlyHostDiscovery:
 		scanType = "Host Discovery"
-		gologger.Debug().Msgf("running %s\n", scanType)
+		logx.Debugf("running %s\n", scanType)
 	default:
-		gologger.Debug().Msgf("running %s scan with %s privileges\n", scanType, accessLevel)
+		logx.Debugf("running %s scan with %s privileges\n", scanType, accessLevel)
 	}
 }
 
 func showHostDiscoveryInfo() {
-	gologger.Debug().Msgf("running host discovery scan\n")
+	logx.Debugf("running host discovery scan\n")
 }
 
 func showNetworkInterfaces() error {
@@ -48,14 +48,14 @@ func showNetworkInterfaces() error {
 	for _, itf := range interfaces {
 		addresses, addErr := itf.Addrs()
 		if addErr != nil {
-			gologger.Warning().Msgf("could not retrieve addresses for %s: %s\n", itf.Name, addErr)
+			logx.Warnf("could not retrieve addresses for %s: %s\n", itf.Name, addErr)
 			continue
 		}
 		var addrstr []string
 		for _, address := range addresses {
 			addrstr = append(addrstr, address.String())
 		}
-		gologger.Debug().Msgf(
+		logx.Debugf(
 			"Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n",
 			itf.Name,
 			itf.HardwareAddr,
@@ -66,9 +66,9 @@ func showNetworkInterfaces() error {
 	// External ip
 	externalIP, err := scan.WhatsMyIP()
 	if err != nil {
-		gologger.Warning().Msgf("could not obtain public ip: %s\n", err)
+		logx.Warnf("could not obtain public ip: %s\n", err)
 	}
-	gologger.Debug().Msgf("external Ip: %s\n", externalIP)
+	logx.Debugf("external Ip: %s\n", externalIP)
 
 	return nil
 }

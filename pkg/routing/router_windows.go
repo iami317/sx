@@ -12,7 +12,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
-	stringsutil "github.com/projectdiscovery/utils/strings"
+	stringsUtil "github.com/projectdiscovery/utils/strings"
 )
 
 // New creates a routing engine for windows
@@ -33,7 +33,7 @@ func New() (Router, error) {
 				continue
 			}
 
-			parts := stringsutil.SplitAny(outputLine, " \t")
+			parts := stringsUtil.SplitAny(outputLine, " \t")
 			if len(parts) >= 6 && govalidator.IsNumeric(parts[4]) {
 				prefix := parts[3]
 				_, _, err := net.ParseCIDR(prefix)
@@ -50,7 +50,7 @@ func New() (Router, error) {
 				if err != nil {
 					return nil, err
 				}
-				isDefault := stringsutil.EqualFoldAny(prefix, "0.0.0.0/0", "::/0")
+				isDefault := stringsUtil.EqualFoldAny(prefix, "0.0.0.0/0", "::/0")
 
 				route := &Route{
 					Type:             iptype,

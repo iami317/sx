@@ -2,11 +2,11 @@ package runner
 
 import (
 	"encoding/json"
+	"github.com/iami317/logx"
 	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/projectdiscovery/gologger"
 	fileUtil "github.com/projectdiscovery/utils/file"
 	permissionUtil "github.com/projectdiscovery/utils/permission"
 )
@@ -63,7 +63,7 @@ func (resumeCfg *ResumeCfg) ConfigureResume() error {
 	resumeCfg.RLock()
 	defer resumeCfg.RUnlock()
 
-	gologger.Info().Msg("Resuming from save checkpoint")
+	logx.Info("Resuming from save checkpoint")
 	file, err := os.ReadFile(DefaultResumeFilePath())
 	if err != nil {
 		return err

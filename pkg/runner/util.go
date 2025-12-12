@@ -2,10 +2,10 @@ package runner
 
 import (
 	"fmt"
+	"github.com/iami317/logx"
 	"net"
 
 	"github.com/iami317/sx/pkg/scan"
-	"github.com/projectdiscovery/gologger"
 	ipUtil "github.com/projectdiscovery/utils/ip"
 	osUtil "github.com/projectdiscovery/utils/os"
 	sliceUtil "github.com/projectdiscovery/utils/slice"
@@ -17,7 +17,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 	if !ipUtil.IsIP(target) {
 		dnsData, err := r.dnsclient.QueryMultiple(target)
 		if err != nil || dnsData == nil {
-			gologger.Warning().Msgf("could not get IP for host: %s\n", target)
+			logx.Warnf("could not get IP for host: %s\n", target)
 			return nil, nil, err
 		}
 		if len(r.options.IPVersion) > 0 {
@@ -35,7 +35,7 @@ func (r *Runner) host2ips(target string) (targetIPsV4 []string, targetIPsV6 []st
 		}
 	} else {
 		targetIPsV4 = append(targetIPsV6, target)
-		gologger.Debug().Msgf("found %d addresses for %s\n", len(targetIPsV4), target)
+		logx.Debugf("found %d addresses for %s\n", len(targetIPsV4), target)
 	}
 
 	return

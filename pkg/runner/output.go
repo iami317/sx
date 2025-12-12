@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/iami317/logx"
 	"io"
 	"reflect"
 	"strconv"
@@ -16,7 +17,6 @@ import (
 	"github.com/iami317/sx/pkg/port"
 	"github.com/iami317/sx/pkg/protocol"
 	"github.com/pkg/errors"
-	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/utils/structs"
 )
 
@@ -258,24 +258,24 @@ func WriteCsvOutputWithMac(host, ip, macAddress string, ports []*port.Port, outp
 func writeCSVHeaders(data *Result, writer *csv.Writer, excludedFields []string) {
 	headers, err := data.CSVHeaders(excludedFields)
 	if err != nil {
-		gologger.Error().Msg(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 
 	if err := writer.Write(headers); err != nil {
 		errMsg := errors.Wrap(err, "could not write headers")
-		gologger.Error().Msg(errMsg.Error())
+		logx.Error(errMsg.Error())
 	}
 }
 
 func writeCSVRow(data *Result, writer *csv.Writer, excludedFields []string) {
 	rowData, err := data.CSVFields(excludedFields)
 	if err != nil {
-		gologger.Error().Msg(err.Error())
+		logx.Error(err.Error())
 		return
 	}
 	if err := writer.Write(rowData); err != nil {
 		errMsg := errors.Wrap(err, "Could not write row")
-		gologger.Error().Msg(errMsg.Error())
+		logx.Error(errMsg.Error())
 	}
 }

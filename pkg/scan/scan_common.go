@@ -2,11 +2,11 @@ package scan
 
 import (
 	"errors"
+	"github.com/iami317/logx"
 	"net"
 
 	"github.com/iami317/sx/pkg/privileges"
 	"github.com/iami317/sx/pkg/routing"
-	"github.com/projectdiscovery/gologger"
 	"golang.org/x/net/icmp"
 )
 
@@ -70,7 +70,7 @@ func (l *ListenHandler) Release() {
 
 func init() {
 	if r, err := routing.New(); err != nil {
-		gologger.Error().Msgf("could not initialize router: %s\n", err)
+		logx.Errorf("could not initialize router: %s\n", err)
 	} else {
 		PkgRouter = r
 	}

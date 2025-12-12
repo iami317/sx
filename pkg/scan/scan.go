@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/iami317/logx"
 	netUtil "github.com/projectdiscovery/utils/net"
 	"io"
 	"net"
@@ -17,7 +18,6 @@ import (
 	"github.com/iami317/sx/pkg/result"
 	"github.com/iami317/sx/pkg/utils/limits"
 	"github.com/projectdiscovery/cdncheck"
-	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/networkpolicy"
 	envUtil "github.com/projectdiscovery/utils/env"
@@ -180,7 +180,7 @@ acquire:
 	if handler, err := Acquire(options); err != nil {
 		// automatically fallback to connect scan
 		if options.ScanType == "s" {
-			gologger.Info().Msgf("syn scan is not possible, falling back to connect scan")
+			logx.Infof("syn scan is not possible, falling back to connect scan")
 			options.ScanType = "c"
 			goto acquire
 		}
@@ -256,7 +256,7 @@ func (s *Scanner) ICMPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.HostDiscoveryChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("received ICMP response from %s\n", ip.ipv4)
+				logx.Debugf("received ICMP response from %s\n", ip.ipv4)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -279,7 +279,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				gologger.Debug().Msgf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
 				continue
 			}
 
@@ -293,7 +293,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 				}
 			}
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -301,7 +301,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				gologger.Debug().Msgf("received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -324,12 +324,12 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				gologger.Debug().Msgf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				logx.Debugf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
 				continue
 			}
 
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -337,7 +337,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				gologger.Debug().Msgf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				logx.Debugf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}

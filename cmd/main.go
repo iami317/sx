@@ -16,7 +16,7 @@ func main() {
 	options := runner.ParseOptions()
 	sxRunner, err := runner.NewRunner(options)
 	if err != nil {
-		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
+		gologger.Fatal().Msgf("could not create runner: %s\n", err)
 	}
 
 	// Setup context with cancelation
@@ -27,16 +27,16 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-c
-		gologger.Info().Msgf("Received signal: %s, exiting gracefully...\n", sig)
+		gologger.Info().Msgf("received signal: %s, exiting gracefully...\n", sig)
 
 		// Cancel context to stop ongoing tasks
 		cancel()
 
 		// Try to save resume config if needed
 		if options.ResumeCfg != nil && options.ResumeCfg.ShouldSaveResume() {
-			gologger.Info().Msgf("Creating resume file: %s\n", runner.DefaultResumeFilePath())
+			gologger.Info().Msgf("creating resume file: %s\n", runner.DefaultResumeFilePath())
 			if err := options.ResumeCfg.SaveResumeConfig(); err != nil {
-				gologger.Error().Msgf("Couldn't create resume file: %s\n", err)
+				gologger.Error().Msgf("couldn't create resume file: %s\n", err)
 			}
 		}
 
@@ -45,7 +45,7 @@ func main() {
 			sxRunner.ShowScanResultOnExit()
 
 			if err := sxRunner.Close(); err != nil {
-				gologger.Error().Msgf("Couldn't close runner: %s\n", err)
+				gologger.Error().Msgf("couldn't close runner: %s\n", err)
 			}
 		}
 
@@ -57,7 +57,7 @@ func main() {
 
 	// Start enumeration
 	if err := sxRunner.RunEnumeration(ctx); err != nil {
-		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
+		gologger.Fatal().Msgf("could not run enumeration: %s\n", err)
 	}
 
 	defer func() {

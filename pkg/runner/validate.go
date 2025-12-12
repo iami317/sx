@@ -118,7 +118,7 @@ func (options *Options) ValidateOptions() error {
 	}
 
 	if options.Proxy != "" && options.ScanType == SynScan {
-		gologger.Warning().Msgf("Syn Scan can't be used with socks proxy: falling back to connect scan")
+		gologger.Warning().Msgf("syn Scan can't be used with socks proxy: falling back to connect scan")
 		options.ScanType = ConnectScan
 	}
 
@@ -127,12 +127,12 @@ func (options *Options) ValidateOptions() error {
 	}
 
 	if options.ScanType == SynScan && scan.PkgRouter == nil {
-		gologger.Warning().Msgf("Routing could not be determined (are you using a VPN?).falling back to connect scan")
+		gologger.Warning().Msgf("routing could not be determined (are you using a VPN?).falling back to connect scan")
 		options.ScanType = ConnectScan
 	}
 
 	if options.WarmUpTime <= 0 {
-		gologger.Debug().Msgf("Warm up time must be greater than 0, setting to 2")
+		gologger.Debug().Msgf("warm up time must be greater than 0, setting to 2")
 		options.WarmUpTime = 2
 	}
 
@@ -158,7 +158,7 @@ func (options *Options) configureOutput() {
 func (options *Options) configureHostDiscovery(ports []*port.Port) {
 	// if less than two ports are specified as input, reduce time and scan directly
 	if len(ports) <= 2 {
-		gologger.Info().Msgf("Host discovery disabled: less than two ports were specified")
+		gologger.Info().Msgf("host discovery disabled: less than two ports were specified")
 		options.WithHostDiscovery = false
 	}
 	if options.shouldDiscoverHosts() && !options.hasProbes() {

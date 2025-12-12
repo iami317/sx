@@ -97,80 +97,80 @@ func ParseOptions() *Options {
 	var cfgFile string
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`sx is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
+	flagSet.SetDescription(`sx是一个用Go语言编写的端口扫描工具，可以快速、可靠地枚举主机开放的端口。`)
 
-	flagSet.CreateGroup("input", "Input",
-		flagSet.StringSliceVarP(&options.Host, "host", "", nil, "hosts to scan ports for (comma-separated)", goflags.NormalizedStringSliceOptions),
-		flagSet.StringVarP(&options.HostsFile, "l", "list", "", "list of hosts to scan ports (file)"),
-		flagSet.StringVarP(&options.ExcludeIps, "eh", "exclude-hosts", "", "hosts to exclude from the scan (comma-separated)"),
-		flagSet.StringVarP(&options.ExcludeIpsFile, "ef", "exclude-file", "", "list of hosts to exclude from scan (file)"),
+	flagSet.CreateGroup("input", "输入",
+		flagSet.StringSliceVarP(&options.Host, "host", "", nil, "要扫描端口的主机(以逗号分隔)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringVarP(&options.HostsFile, "l", "list", "", "扫描端口的主机列表(文件)"),
+		flagSet.StringVarP(&options.ExcludeIps, "eh", "exclude-hosts", "", "要从扫描中排除的主机(以逗号分隔)"),
+		flagSet.StringVarP(&options.ExcludeIpsFile, "ef", "exclude-file", "", "要从扫描中排除的主机列表(文件)"),
 	)
 
-	flagSet.CreateGroup("port", "Port",
-		flagSet.StringVarP(&options.Ports, "p", "port", "", "ports to scan (80,443, 100-200)"),
-		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "", "top ports to scan (default 100) [full,100,1000]"),
-		flagSet.StringSliceVarP(&options.ExcludePorts, "ep", "exclude-ports", nil, "ports to exclude from scan (file or comma-separated)", goflags.FileCommaSeparatedStringSliceOptions),
-		flagSet.StringSliceVarP(&options.PortsFile, "pf", "ports-file", nil, "list of ports to scan (file or comma-separated)", goflags.FileCommaSeparatedStringSliceOptions),
-		flagSet.IntVarP(&options.PortThreshold, "pts", "port-threshold", 0, "port threshold to skip port scan for the host"),
-		flagSet.BoolVarP(&options.ExcludeCDN, "ec", "exclude-cdn", false, "skip full port scans for CDN/WAF (only scan for port 80,443)"),
-		flagSet.BoolVarP(&options.OutputCDN, "cdn", "display-cdn", false, "display cdn in use"),
+	flagSet.CreateGroup("port", "端口",
+		flagSet.StringVarP(&options.Ports, "p", "port", "", "要扫描的端口,示例:80,443,100-200"),
+		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "", "扫描的主要端口(默认100)[full,100,1000]"),
+		flagSet.StringSliceVarP(&options.ExcludePorts, "ep", "exclude-ports", nil, "扫描中排除的端口(文件或逗号分隔)", goflags.FileCommaSeparatedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.PortsFile, "pf", "ports-file", nil, "包含要扫描的端口列表文件(逗号分隔)", goflags.FileCommaSeparatedStringSliceOptions),
+		flagSet.IntVarP(&options.PortThreshold, "pts", "port-threshold", 0, "跳过主机端口扫描的端口阈值"),
+		flagSet.BoolVarP(&options.ExcludeCDN, "ec", "exclude-cdn", false, "对CDN/WAF跳过全端口扫描 (只扫描80,443)"),
+		flagSet.BoolVarP(&options.OutputCDN, "cdn", "display-cdn", false, "显示探测到的CDN"),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
-		flagSet.IntVar(&options.Threads, "c", 25, "general internal worker threads"),
-		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "packets to send per second"),
+		flagSet.IntVar(&options.Threads, "c", 25, "运行线程数量"),
+		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "每秒发送数据包数量"),
 	)
 
-	flagSet.CreateGroup("output", "Output",
-		flagSet.StringVarP(&options.Output, "output", "o", "", "file to write output to (optional)"),
-		flagSet.BoolVarP(&options.ListOutputFields, "list-output-fields", "lof", false, "list of fields to output (comma separated)"),
-		flagSet.StringSliceVarP(&options.ExcludeOutputFields, "exclude-output-fields", "eof", nil, "exclude output fields output based on a condition", goflags.NormalizedOriginalStringSliceOptions),
-		flagSet.BoolVarP(&options.JSON, "json", "j", false, "write output in JSON lines format"),
-		flagSet.BoolVar(&options.CSV, "csv", false, "write output in csv format"),
+	flagSet.CreateGroup("output", "输出",
+		flagSet.StringVarP(&options.Output, "output", "o", "", "将输出写入指定文件(可选)"),
+		flagSet.BoolVarP(&options.ListOutputFields, "list-output-fields", "lof", false, "要输出的字段列表(逗号分隔)"),
+		flagSet.StringSliceVarP(&options.ExcludeOutputFields, "exclude-output-fields", "eof", nil, "根据条件排除输出字段", goflags.NormalizedOriginalStringSliceOptions),
+		flagSet.BoolVarP(&options.JSON, "json", "j", false, "输出json格式"),
+		flagSet.BoolVar(&options.CSV, "csv", false, "输出csv格式"),
 	)
 
-	flagSet.CreateGroup("config", "Configuration",
-		flagSet.StringVar(&cfgFile, "config", "", "path to the sx configuration file (default $HOME/.config/sx/config.yaml)"),
-		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "scan all the IP's associated with DNS record"),
+	flagSet.CreateGroup("config", "配置",
+		flagSet.StringVar(&cfgFile, "config", "", "配置文件的路径 (默认:$HOME/.config/sx/config.yaml)"),
+		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "扫描与DNS记录相关的所有IP"),
 		flagSet.StringSliceVarP(&options.IPVersion, "iv", "ip-version", []string{scan.IPv4}, "ip version to scan of hostname (4,6) - (default 4)", goflags.NormalizedStringSliceOptions),
-		flagSet.StringVarP(&options.ScanType, "s", "scan-type", ConnectScan, "type of port scan (SYN/CONNECT)"),
-		flagSet.StringVar(&options.SourceIP, "source-ip", "", "source ip and port (x.x.x.x:yyy - might not work on OSX) "),
+		flagSet.StringVarP(&options.ScanType, "s", "scan-type", ConnectScan, "端口扫描类型 (SYN/CONNECT)"),
+		flagSet.StringVar(&options.SourceIP, "source-ip", "", "源ip和端口 (x.x.x.x:yyy - might not work on OSX) "),
 		flagSet.StringVarP(&options.ConnectPayload, "cp", "connect-payload", "", "payload to send in CONNECT scans (optional)"),
-		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "list available interfaces and public ip"),
-		flagSet.StringVarP(&options.Interface, "i", "interface", "", "network Interface to use for port scan"),
-		flagSet.StringVar(&options.Resolvers, "r", "", "list of custom resolver dns resolution (comma separated or from file)"),
+		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "展示可用的网络接口和公网IP"),
+		flagSet.StringVarP(&options.Interface, "i", "interface", "", "网络接口名称"),
+		flagSet.StringVar(&options.Resolvers, "r", "", "自定义解析器DNS解析列表 (逗号分隔或文件)"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "socks5 proxy (ip[:port] / fqdn[:port]"),
-		flagSet.StringVar(&options.ProxyAuth, "proxy-auth", "", "socks5 proxy authentication (username:password)"),
-		flagSet.BoolVar(&options.Resume, "resume", false, "resume scan using resume.cfg"),
-		flagSet.DurationVarP(&options.InputReadTimeout, "input-read-timeout", "irt", time.Duration(3*time.Minute), "timeout on input read"),
-		flagSet.BoolVar(&options.DisableStdin, "no-stdin", false, "Disable Stdin processing"),
+		flagSet.StringVar(&options.ProxyAuth, "proxy-auth", "", "Socks5代理认证(用户名:密码)"),
+		flagSet.BoolVar(&options.Resume, "resume", false, "使用resume.cfg恢复扫描"),
+		flagSet.DurationVarP(&options.InputReadTimeout, "input-read-timeout", "irt", 3*time.Minute, "输入读取超时"),
+		flagSet.BoolVar(&options.DisableStdin, "no-stdin", false, "禁用标准输入处理"),
 	)
 
-	flagSet.CreateGroup("host-discovery", "Host-Discovery",
-		flagSet.BoolVarP(&options.OnlyHostDiscovery, "host-discovery", "sn", false, "Perform Only Host Discovery"),
-		flagSet.BoolVarP(&options.WithHostDiscovery, "with-host-discovery", "wn", false, "Enable Host discovery"),
-		flagSet.StringSliceVarP(&options.TcpSynPingProbes, "probe-tcp-syn", "ps", nil, "TCP SYN Ping (host discovery needs to be enabled)", goflags.StringSliceOptions),
-		flagSet.StringSliceVarP(&options.TcpAckPingProbes, "probe-tcp-ack", "pa", nil, "TCP ACK Ping (host discovery needs to be enabled)", goflags.StringSliceOptions),
-		flagSet.BoolVarP(&options.IcmpEchoRequestProbe, "probe-icmp-echo", "pe", false, "ICMP echo request Ping (host discovery needs to be enabled)"),
-		flagSet.BoolVarP(&options.IcmpTimestampRequestProbe, "probe-icmp-timestamp", "pp", false, "ICMP timestamp request Ping (host discovery needs to be enabled)"),
-		flagSet.BoolVarP(&options.IcmpAddressMaskRequestProbe, "probe-icmp-address-mask", "pm", false, "ICMP address mask request Ping (host discovery needs to be enabled)"),
-		flagSet.BoolVarP(&options.ArpPing, "arp-ping", "arp", false, "ARP ping (host discovery needs to be enabled)"),
-		flagSet.BoolVarP(&options.IPv6NeighborDiscoveryPing, "nd-ping", "nd", false, "IPv6 Neighbor Discovery (host discovery needs to be enabled)"),
-		flagSet.BoolVar(&options.ReversePTR, "rev-ptr", false, "Reverse PTR lookup for input ips"),
+	flagSet.CreateGroup("host-discovery", "主机探测",
+		flagSet.BoolVarP(&options.OnlyHostDiscovery, "host-discovery", "sn", false, "执行主机发现"),
+		flagSet.BoolVarP(&options.WithHostDiscovery, "with-host-discovery", "wn", false, "启用主机发现功能"),
+		flagSet.StringSliceVarP(&options.TcpSynPingProbes, "probe-tcp-syn", "ps", nil, "TCP SYN Ping (需要启用主机发现)", goflags.StringSliceOptions),
+		flagSet.StringSliceVarP(&options.TcpAckPingProbes, "probe-tcp-ack", "pa", nil, "TCP ACK Ping (需要启用主机发现)", goflags.StringSliceOptions),
+		flagSet.BoolVarP(&options.IcmpEchoRequestProbe, "probe-icmp-echo", "pe", false, "ICMP echo request Ping (需要启用主机发现)"),
+		flagSet.BoolVarP(&options.IcmpTimestampRequestProbe, "probe-icmp-timestamp", "pp", false, "ICMP timestamp request Ping (需要启用主机发现)"),
+		flagSet.BoolVarP(&options.IcmpAddressMaskRequestProbe, "probe-icmp-address-mask", "pm", false, "ICMP address mask request Ping (需要启用主机发现)"),
+		flagSet.BoolVarP(&options.ArpPing, "arp-ping", "arp", false, "ARP ping (需要启用主机发现)"),
+		flagSet.BoolVarP(&options.IPv6NeighborDiscoveryPing, "nd-ping", "nd", false, "IPv6 Neighbor Discovery (需要启用主机发现)"),
+		flagSet.BoolVar(&options.ReversePTR, "rev-ptr", false, "反向PTR查找输入ip"),
 	)
 
-	flagSet.CreateGroup("optimization", "Optimization",
-		flagSet.IntVar(&options.Retries, "retries", DefaultRetriesSynScan, "number of retries for the port scan"),
-		flagSet.DurationVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan, "millisecond to wait before timing out"),
-		flagSet.IntVar(&options.WarmUpTime, "warm-up-time", 2, "time in seconds between scan phases"),
-		flagSet.BoolVar(&options.Ping, "ping", false, "ping probes for verification of host"),
-		flagSet.BoolVar(&options.Verify, "verify", false, "validate the ports again with TCP verification"),
+	flagSet.CreateGroup("optimization", "优化",
+		flagSet.IntVar(&options.Retries, "retries", DefaultRetriesSynScan, "端口扫描的重试次数"),
+		flagSet.DurationVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan, "超时前等待的毫秒数"),
+		flagSet.IntVar(&options.WarmUpTime, "warm-up-time", 2, "扫描等待的秒数"),
+		flagSet.BoolVar(&options.Ping, "ping", false, "Ping探测用于验证主机"),
+		flagSet.BoolVar(&options.Verify, "verify", false, "使用TCP再次验证端口"),
 	)
 
 	flagSet.CreateGroup("debug", "Debug",
-		flagSet.BoolVar(&options.Debug, "debug", false, "display debugging information"),
-		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "display verbose output"),
-		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
+		flagSet.BoolVar(&options.Debug, "debug", false, "显示debug信息"),
+		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "显示verbose信息"),
+		flagSet.BoolVar(&options.Silent, "silent", false, "仅仅显示结果信息"),
 	)
 
 	_ = flagSet.Parse()
@@ -178,7 +178,7 @@ func ParseOptions() *Options {
 	if options.ListOutputFields {
 		fields, err := structs.GetStructFields(Result{})
 		if err != nil {
-			gologger.Fatal().Msgf("Could not get struct fields: %s\n", err)
+			gologger.Fatal().Msgf("could not get struct fields: %s\n", err)
 		}
 		for _, field := range fields {
 			fmt.Println(field)
@@ -192,7 +192,7 @@ func ParseOptions() *Options {
 		}
 		// merge config file with flags
 		if err := flagSet.MergeConfigFile(cfgFile); err != nil {
-			gologger.Fatal().Msgf("Could not read config: %s\n", err)
+			gologger.Fatal().Msgf("could not read config: %s\n", err)
 		}
 	}
 
@@ -211,7 +211,7 @@ func ParseOptions() *Options {
 	if options.InterfacesList {
 		err := showNetworkInterfaces()
 		if err != nil {
-			gologger.Error().Msgf("Could not get network interfaces: %s\n", err)
+			gologger.Error().Msgf("could not get network interfaces: %s\n", err)
 		}
 		os.Exit(0)
 	}
@@ -220,7 +220,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err := options.ValidateOptions()
 	if err != nil {
-		gologger.Fatal().Msgf("Program exiting: %s\n", err)
+		gologger.Fatal().Msgf("program exiting: %s\n", err)
 	}
 
 	return options

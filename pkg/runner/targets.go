@@ -45,7 +45,7 @@ func (r *Runner) mergeToFile() (string, error) {
 	}
 	defer func() {
 		if err := tempInput.Close(); err != nil {
-			gologger.Error().Msgf("Could not close temp input: %s\n", err)
+			gologger.Error().Msgf("could not close temp input: %s\n", err)
 		}
 	}()
 
@@ -64,7 +64,7 @@ func (r *Runner) mergeToFile() (string, error) {
 		}
 		defer func() {
 			if err := f.Close(); err != nil {
-				gologger.Error().Msgf("Could not close file %s: %s\n", r.options.HostsFile, err)
+				gologger.Error().Msgf("could not close file %s: %s\n", r.options.HostsFile, err)
 			}
 		}()
 		if _, err := io.Copy(tempInput, f); err != nil {
@@ -97,7 +97,7 @@ func (r *Runner) PreProcessTargets() error {
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			gologger.Error().Msgf("Could not close file %s: %s\n", r.targetsFile, err)
+			gologger.Error().Msgf("could not close file %s: %s\n", r.targetsFile, err)
 		}
 	}()
 	s := bufio.NewScanner(f)
@@ -212,7 +212,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	)
 	for _, ip := range ipsV4 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			gologger.Warning().Msgf("Skipping host %s as ip %s was excluded\n", target, ip)
+			gologger.Warning().Msgf("skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -220,7 +220,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 	}
 	for _, ip := range ipsV6 {
 		if !r.scanner.IPRanger.Np.ValidateAddress(ip) {
-			gologger.Warning().Msgf("Skipping host %s as ip %s was excluded\n", target, ip)
+			gologger.Warning().Msgf("skipping host %s as ip %s was excluded\n", target, ip)
 			continue
 		}
 
@@ -235,24 +235,24 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 		// Scan the hosts found for ping probes
 		pingResults, err := scan.PingHosts(initialHosts)
 		if err != nil {
-			gologger.Warning().Msgf("Could not perform ping scan on %s: %s\n", target, err)
+			gologger.Warning().Msgf("could not perform ping scan on %s: %s\n", target, err)
 			return []string{}, err
 		}
 		for _, result := range pingResults.Hosts {
 			if result.Type == scan.HostActive {
-				gologger.Debug().Msgf("Ping probe succeed for %s: latency=%s\n", result.Host, result.Latency)
+				gologger.Debug().Msgf("ping probe succeed for %s: latency=%s\n", result.Host, result.Latency)
 			} else {
-				gologger.Debug().Msgf("Ping probe failed for %s: error=%s\n", result.Host, result.Error)
+				gologger.Debug().Msgf("ping probe failed for %s: error=%s\n", result.Host, result.Error)
 			}
 		}
 
 		// Get the fastest host in the list of hosts
 		fastestHost, err := pingResults.GetFastestHost()
 		if err != nil {
-			gologger.Warning().Msgf("No active host found for %s: %s\n", target, err)
+			gologger.Warning().Msgf("no active host found for %s: %s\n", target, err)
 			return []string{}, err
 		}
-		gologger.Info().Msgf("Fastest host found for target: %s (%s)\n", fastestHost.Host, fastestHost.Latency)
+		gologger.Info().Msgf("fastest host found for target: %s (%s)\n", fastestHost.Host, fastestHost.Latency)
 		hostIPS = append(hostIPS, fastestHost.Host)
 	} else if r.options.ScanAllIPS {
 		hostIPS = append(initialHosts, initialHostsV6...)
@@ -267,7 +267,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 
 	for _, hostIP := range hostIPS {
 		if r.scanner.IPRanger.Contains(hostIP) {
-			gologger.Debug().Msgf("Using ip %s for host %s enumeration\n", hostIP, target)
+			gologger.Debug().Msgf("using ip %s for host %s enumeration\n", hostIP, target)
 		}
 	}
 

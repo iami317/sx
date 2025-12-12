@@ -244,7 +244,7 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err := tcp.SetNetworkLayerForChecksum(&ip4)
 	if err != nil {
-		gologger.Debug().Msgf("Can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		gologger.Debug().Msgf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
 	}
 
 	if hasSourceIp && listenHandler.SourceHW != nil && iface != nil {
@@ -259,7 +259,7 @@ func sendAsyncTCP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 	}
 
 	if err != nil {
-		gologger.Debug().Msgf("Can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+		gologger.Debug().Msgf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
 	}
 }
 
@@ -293,7 +293,7 @@ func sendAsyncUDP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = udp.SetNetworkLayerForChecksum(&ip4)
 	if err != nil {
-		gologger.Debug().Msgf("Can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		gologger.Debug().Msgf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
 	} else {
 		if listenHandler.UdpConn4 == nil {
 			gologger.Debug().Msgf("UdpConn4 is nil, cannot send packet to %s:%d\n", ip, p.Port)
@@ -302,7 +302,7 @@ func sendAsyncUDP4(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 		err = sendWithConn(ip, listenHandler.UdpConn4, &udp)
 		if err != nil {
-			gologger.Debug().Msgf("Can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			gologger.Debug().Msgf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
 		}
 	}
 }
@@ -354,7 +354,7 @@ func sendAsyncTCP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = tcp.SetNetworkLayerForChecksum(&ip6)
 	if err != nil {
-		gologger.Debug().Msgf("Can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		gologger.Debug().Msgf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
 	} else {
 		if listenHandler.TcpConn6 == nil {
 			gologger.Debug().Msgf("TcpConn6 is nil, cannot send packet to %s:%d\n", ip, p.Port)
@@ -363,7 +363,7 @@ func sendAsyncTCP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 		err = sendWithConn(ip, listenHandler.TcpConn6, &tcp)
 		if err != nil {
-			gologger.Debug().Msgf("Can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			gologger.Debug().Msgf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
 		}
 	}
 }
@@ -399,7 +399,7 @@ func sendAsyncUDP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 	err = udp.SetNetworkLayerForChecksum(&ip6)
 	if err != nil {
-		gologger.Debug().Msgf("Can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
+		gologger.Debug().Msgf("can not set network layer for %s:%d port: %s\n", ip, p.Port, err)
 	} else {
 		if listenHandler.UdpConn6 == nil {
 			gologger.Debug().Msgf("UdpConn6 is nil, cannot send packet to %s:%d\n", ip, p.Port)
@@ -408,7 +408,7 @@ func sendAsyncUDP6(listenHandler *ListenHandler, ip string, p *port.Port, pkgFla
 
 		err = sendWithConn(ip, listenHandler.UdpConn6, &udp)
 		if err != nil {
-			gologger.Debug().Msgf("Can not send packet to %s:%d port: %s\n", ip, p.Port, err)
+			gologger.Debug().Msgf("can not send packet to %s:%d port: %s\n", ip, p.Port, err)
 		}
 	}
 }

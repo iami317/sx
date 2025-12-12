@@ -256,7 +256,7 @@ func (s *Scanner) ICMPResultWorker(ctx context.Context) {
 			return
 		case ip := <-s.ListenHandler.HostDiscoveryChan:
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("Received ICMP response from %s\n", ip.ipv4)
+				gologger.Debug().Msgf("received ICMP response from %s\n", ip.ipv4)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -279,7 +279,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				gologger.Debug().Msgf("Discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				gologger.Debug().Msgf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
 				continue
 			}
 
@@ -293,7 +293,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 				}
 			}
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("Received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("received Transport (TCP|UDP) probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -301,7 +301,7 @@ func (s *Scanner) TCPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				gologger.Debug().Msgf("Received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("received Transport (TCP) scan response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}
@@ -324,12 +324,12 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 			srcIP6WithPort := net.JoinHostPort(ip.ipv6, ip.port.String())
 			isIPInRange := s.IPRanger.ContainsAny(srcIP4WithPort, srcIP6WithPort, ip.ipv4, ip.ipv6)
 			if !isIPInRange {
-				gologger.Debug().Msgf("Discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
+				gologger.Debug().Msgf("discarding Transport packet from non target ips: ip4=%s ip6=%s\n", ip.ipv4, ip.ipv6)
 				continue
 			}
 
 			if s.ListenHandler.Phase.Is(HostDiscovery) {
-				gologger.Debug().Msgf("Received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("received UDP probe response from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.HostDiscoveryResults.AddIp(ip.ipv4)
 				}
@@ -337,7 +337,7 @@ func (s *Scanner) UDPResultWorker(ctx context.Context) {
 					s.HostDiscoveryResults.AddIp(ip.ipv6)
 				}
 			} else if s.ListenHandler.Phase.Is(Scan) || s.stream {
-				gologger.Debug().Msgf("Received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
+				gologger.Debug().Msgf("received Transport (UDP) scan response from from ipv4:%s ipv6:%s port:%d\n", ip.ipv4, ip.ipv6, ip.port.Port)
 				if ip.ipv4 != "" {
 					s.ScanResults.AddPort(ip.ipv4, ip.port)
 				}

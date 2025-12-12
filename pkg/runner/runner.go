@@ -351,7 +351,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 	// Retries are performed regardless of the previous scan results due to network unreliability
 	for currentRetry := 0; currentRetry < r.options.Retries; currentRetry++ {
 		if currentRetry < r.options.ResumeCfg.Retry {
-			gologger.Debug().Msgf("Skipping Retry: %d\n", currentRetry)
+			gologger.Debug().Msgf("skipping Retry: %d\n", currentRetry)
 			continue
 		}
 
@@ -386,7 +386,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			resumeCfgIndex := r.options.ResumeCfg.Index
 			r.options.ResumeCfg.RUnlock()
 			if index < resumeCfgIndex {
-				gologger.Debug().Msgf("Skipping \"%s:%d\": Resume - Port scan already completed\n", ip, port.Port)
+				gologger.Debug().Msgf("skipping \"%s:%d\": Resume - Port scan already completed\n", ip, port.Port)
 				continue
 			}
 
@@ -400,7 +400,7 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 			}
 			if r.options.PortThreshold > 0 && r.scanner.ScanResults.GetPortCount(ip) >= r.options.PortThreshold {
 				hosts, _ := r.scanner.IPRanger.GetHostsByIP(ip)
-				gologger.Debug().Msgf("Skipping %s %v, Threshold reached \n", ip, hosts)
+				gologger.Debug().Msgf("skipping %s %v, Threshold reached \n", ip, hosts)
 				r.scanner.ScanResults.AddSkipped(ip)
 				continue
 			}
@@ -418,14 +418,14 @@ func (r *Runner) RunEnumeration(pctx context.Context) error {
 		for _, targetWithPort := range targetsWithPort {
 			ip, p, err := net.SplitHostPort(targetWithPort)
 			if err != nil {
-				gologger.Debug().Msgf("Skipping %s: %v\n", targetWithPort, err)
+				gologger.Debug().Msgf("skipping %s: %v\n", targetWithPort, err)
 				continue
 			}
 
 			// naive port find
 			pp, err := strconv.Atoi(p)
 			if err != nil {
-				gologger.Debug().Msgf("Skipping %s, could not cast port %s: %v\n", targetWithPort, p, err)
+				gologger.Debug().Msgf("skipping %s, could not cast port %s: %v\n", targetWithPort, p, err)
 				continue
 			}
 			var portWithMetadata = port.Port{
@@ -630,7 +630,7 @@ func (r *Runner) RawSocketEnumeration(ctx context.Context, ip string, p *port.Po
 	default:
 		// performs cdn/waf scan exclusions checks
 		if !r.canIScanIfCDN(ip, p) {
-			gologger.Debug().Msgf("Skipping cdn target: %s:%d\n", ip, p.Port)
+			gologger.Debug().Msgf("skipping cdn target: %s:%d\n", ip, p.Port)
 			return
 		}
 
@@ -673,7 +673,7 @@ func (r *Runner) handleHostPort(ctx context.Context, host, payload string, p *po
 	default:
 		// performs cdn scan exclusions checks
 		if !r.canIScanIfCDN(host, p) {
-			gologger.Debug().Msgf("Skipping cdn target: %s:%d\n", host, p.Port)
+			gologger.Debug().Msgf("skipping cdn target: %s:%d\n", host, p.Port)
 			return
 		}
 

@@ -132,7 +132,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("config", "配置",
 		flagSet.StringVar(&cfgFile, "config", "", "配置文件的路径 (默认:$HOME/.config/sx/config.yaml)"),
 		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "扫描与DNS记录相关的所有IP"),
-		flagSet.StringSliceVarP(&options.IPVersion, "iv", "ip-version", []string{scan.IPv4}, "ip version to scan of hostname (4,6) - (default 4)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.IPVersion, "iv", "ip-version", []string{scan.IPv4}, "扫描主机名的ip版本(4,6)-(默认4)", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", ConnectScan, "端口扫描类型 (SYN/CONNECT)"),
 		flagSet.StringVar(&options.SourceIP, "source-ip", "", "源ip和端口 (x.x.x.x:yyy - might not work on OSX) "),
 		flagSet.StringVarP(&options.ConnectPayload, "cp", "connect-payload", "", "payload to send in CONNECT scans (optional)"),
@@ -168,7 +168,7 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("debug", "Debug",
-		flagSet.BoolVar(&options.Debug, "debug", true, "显示debug信息"),
+		flagSet.BoolVar(&options.Debug, "debug", false, "显示debug信息"),
 		flagSet.BoolVarP(&options.Verbose, "v", "verbose", false, "显示verbose信息"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "仅仅显示结果信息"),
 	)

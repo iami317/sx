@@ -12,7 +12,6 @@ const (
 	DefaultRetriesSynScan     = 3
 	DefaultRetriesConnectScan = 3
 
-	SynScan             = "s"
-	ConnectScan         = "c"
-	DefautStatsInterval = 5
+	SynScan     = "s"
+	ConnectScan = "c"
 )
